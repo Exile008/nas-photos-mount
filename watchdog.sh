@@ -47,7 +47,7 @@ while true; do
     auto_scan=$(read_source_setting "$source_id" auto_scan '1')
     interval=$(read_source_setting "$source_id" scan_interval_minutes '360')
     is_uint "$interval" || interval=360
-    [ "$interval" -ge 15 ] || interval=15
+    [ "$interval" -ge 1 ] || interval=1
     last_scan=$(read_file_value "$source_state/last_scan.epoch" '0')
     if [ "$auto_scan" = 1 ] && [ $((now - last_scan)) -ge $((interval * 60)) ]; then
       "$BUSYBOX" setsid "$MODDIR/scan-new.sh" "$source_id" </dev/null >> "$LOG" 2>&1 &

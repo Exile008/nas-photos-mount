@@ -26,7 +26,7 @@ Tap Add folder to create a source, then use Browse to choose a remote SMB folder
 - `Local album folder`: maps to `/storage/emulated/0/DCIM/<name>`. Two sources cannot use the same name.
 - `Enable source`: disabling a source preserves its configuration and dedupe history but unmounts it.
 - `Automatic scan`: searches for new or changed files on that source's own schedule.
-- `Scan interval`: 15 to 10080 minutes.
+- `Scan interval`: 1 to 10080 minutes. The watchdog checks due scans once per minute.
 - `Registration batch size`: 1 to 5000. Start between 100 and 500 for a large library, observe Google Photos, and increase it gradually.
 - `Ignore rules`: apply only to the current source.
 

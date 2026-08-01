@@ -1,9 +1,10 @@
 # Changelog
 
-## Unreleased
+## 3.2.0 - 2026-08-01
 
 - Add an in-panel Chinese/English switch with persistent language selection.
 - Add English README and configuration documentation with language links on the project home page.
+- Allow per-source automatic scan intervals as short as one minute.
 
 ## 3.1.0 - 2026-08-01
 

@@ -119,8 +119,8 @@ RCLONE_BIN=/absolute/path/to/rclone ./build.sh
 建议使用功能分支和 Pull Request；合并到 `main` 后创建版本标签，例如：
 
 ```bash
-git tag -a v3.1.0 -m "NAS Photos Mount v3.1.0"
-git push origin v3.1.0
+git tag -a v3.2.0 -m "NAS Photos Mount v3.2.0"
+git push origin v3.2.0
 ```
 
 ## 许可证

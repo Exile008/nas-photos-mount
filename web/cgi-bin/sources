@@ -78,7 +78,7 @@ valid_album_name "$album_name" || fail_json '400 Bad Request' 'invalid_album_nam
 [ "$auto_scan" = 0 ] || [ "$auto_scan" = 1 ] || fail_json '400 Bad Request' 'invalid_auto_scan'
 is_uint "$interval" || fail_json '400 Bad Request' 'invalid_interval'
 is_uint "$batch_size" || fail_json '400 Bad Request' 'invalid_batch_size'
-[ "$interval" -ge 15 ] && [ "$interval" -le 10080 ] || fail_json '400 Bad Request' 'invalid_interval'
+[ "$interval" -ge 1 ] && [ "$interval" -le 10080 ] || fail_json '400 Bad Request' 'invalid_interval'
 [ "$batch_size" -ge 1 ] && [ "$batch_size" -le 5000 ] || fail_json '400 Bad Request' 'invalid_batch_size'
 
 for other_id in $(source_ids); do
