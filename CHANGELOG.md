@@ -1,5 +1,10 @@
 # Changelog
 
+## Unreleased
+
+- Add an in-panel Chinese/English switch with persistent language selection.
+- Add English README and configuration documentation with language links on the project home page.
+
 ## 3.1.0 - 2026-08-01
 
 - Add a responsive management panel with collapsible SMB and per-source settings.

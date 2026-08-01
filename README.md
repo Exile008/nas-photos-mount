@@ -1,5 +1,7 @@
 # NAS Photos Mount
 
+[简体中文](README.md) | [English](README_EN.md)
+
 [![Build Magisk module](https://github.com/Exile008/nas-photos-mount/actions/workflows/release.yml/badge.svg)](https://github.com/Exile008/nas-photos-mount/actions/workflows/release.yml)
 [![Release](https://img.shields.io/github/v/release/Exile008/nas-photos-mount)](https://github.com/Exile008/nas-photos-mount/releases)
 [![License](https://img.shields.io/github/license/Exile008/nas-photos-mount)](LICENSE)
@@ -17,6 +19,7 @@
 - 每个来源独立保存 `seen.tsv`，重启后不会重复向 Android 媒体库提交未变化文件。
 - rclone 只读 FUSE 挂载，不把整个 NAS 目录缓存到手机。
 - NAS 容量、来源索引大小、挂载进程、扫描队列和日志监控。
+- 管理面板右上角可即时切换简体中文和英文，并记住本机选择。
 - 管理服务只监听 `127.0.0.1:8686`，接口使用随机令牌。
 
 ## 工作原理
@@ -53,7 +56,7 @@ Google Photos 的免费存储政策由 Google 决定，本模块不修改 Google
 6. 点击“添加目录”，浏览并选择 NAS 目录，设置手机相册名、扫描周期、批量大小和忽略规则。
 7. 在 Google Photos 中为对应的本地相册目录启用备份。
 
-详细字段和忽略语法见 [CONFIG.md](CONFIG.md)。
+详细字段和忽略语法见 [CONFIG.md](CONFIG.md)，英文版见 [CONFIG_EN.md](CONFIG_EN.md)。
 
 ## 升级与卸载
 

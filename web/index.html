@@ -63,6 +63,10 @@
     .brand-copy { min-width: 0; }
     .brand { font-size: 16px; font-weight: 750; line-height: 1.25; }
     #activeSummary { color: var(--muted); font-size: 12px; overflow-wrap: anywhere; }
+    .header-actions { display: flex; align-items: center; gap: 9px; flex: 0 0 auto; }
+    .language-switch { display: inline-grid; grid-template-columns: repeat(2, 34px); gap: 2px; padding: 2px; border: 1px solid var(--line); border-radius: 7px; background: var(--surface-soft); }
+    .language-switch button { width: 34px; min-height: 28px; padding: 3px; border: 0; border-radius: 5px; background: transparent; color: var(--muted); font-size: 12px; font-weight: 720; }
+    .language-switch button[aria-pressed="true"] { background: var(--surface); color: var(--accent-strong); box-shadow: 0 1px 3px rgba(20,42,34,.12); }
     .health-pill, .status-pill { display: inline-flex; align-items: center; gap: 7px; white-space: nowrap; }
     .health-pill { min-height: 32px; padding: 6px 10px; border: 1px solid var(--line); border-radius: 999px; background: var(--surface-soft); color: var(--muted); font-size: 12px; font-weight: 650; }
     .dot { width: 8px; height: 8px; border-radius: 50%; background: var(--faint); flex: 0 0 auto; }
@@ -152,6 +156,8 @@
     .empty { padding: 36px 12px; color: var(--muted); text-align: center; }
 
     .auth { max-width: 500px; margin: 80px auto; padding: 22px; border: 1px solid var(--line); border-radius: var(--radius); background: white; }
+    .auth-head { display: flex; align-items: flex-start; justify-content: space-between; gap: 16px; margin-bottom: 8px; }
+    .auth-head h1 { margin-bottom: 0; }
     .toast { position: fixed; right: 18px; bottom: 18px; z-index: 40; max-width: min(440px, calc(100vw - 36px)); padding: 11px 14px; border-radius: 7px; background: #17211e; color: white; box-shadow: 0 12px 30px rgba(12,28,22,.22); opacity: 0; pointer-events: none; transform: translateY(8px); transition: opacity 170ms ease, transform 170ms var(--ease-out); }
     .toast.visible { opacity: 1; transform: translateY(0); }
 
@@ -180,7 +186,8 @@
     }
     @media (max-width: 620px) {
       .header-inner, main { padding-left: 14px; padding-right: 14px; }
-      .header-inner { align-items: flex-start; }
+      .header-inner { align-items: flex-start; flex-wrap: wrap; }
+      .header-actions { width: 100%; justify-content: space-between; }
       .brand-mark { display: none; }
       main { padding-top: 18px; }
       .page-section { padding: 20px 0; }
@@ -214,8 +221,14 @@
 </head>
 <body>
   <div id="auth" class="auth hidden">
-    <h1>管理面板不可用</h1>
-    <p class="muted">请从 Magisk 模块操作入口重新打开。</p>
+    <div class="auth-head">
+      <h1 data-i18n="authTitle">管理面板不可用</h1>
+      <div class="language-switch" role="group" aria-label="语言" data-i18n-aria="languageSwitch">
+        <button class="language-option" type="button" data-language="zh" aria-pressed="true">中</button>
+        <button class="language-option" type="button" data-language="en" aria-pressed="false">EN</button>
+      </div>
+    </div>
+    <p class="muted" data-i18n="authHint">请从 Magisk 模块操作入口重新打开。</p>
   </div>
 
   <div id="app" class="hidden">
@@ -223,35 +236,41 @@
       <div class="header-inner">
         <div class="brand-row">
           <div class="brand-mark"><i data-lucide="images"></i></div>
-          <div class="brand-copy"><div class="brand">NAS Photos Mount</div><div id="activeSummary">正在读取状态</div></div>
+          <div class="brand-copy"><div class="brand">NAS Photos Mount</div><div id="activeSummary" data-i18n="statusReading">正在读取状态</div></div>
         </div>
-        <div class="health-pill"><span id="globalDot" class="dot"></span><span id="globalStatus">检查中</span></div>
+        <div class="header-actions">
+          <div class="health-pill"><span id="globalDot" class="dot"></span><span id="globalStatus" data-i18n="statusChecking">检查中</span></div>
+          <div class="language-switch" role="group" aria-label="语言" data-i18n-aria="languageSwitch">
+            <button class="language-option" type="button" data-language="zh" aria-pressed="true">中</button>
+            <button class="language-option" type="button" data-language="en" aria-pressed="false">EN</button>
+          </div>
+        </div>
       </div>
     </header>
 
     <main>
       <section class="page-section">
         <div class="section-head">
-          <div class="section-title"><span class="section-icon"><i data-lucide="activity"></i></span><h1>运行概览</h1></div>
+          <div class="section-title"><span class="section-icon"><i data-lucide="activity"></i></span><h1 data-i18n="overviewTitle">运行概览</h1></div>
           <div class="toolbar">
-            <button id="refreshCapacityBtn" type="button" title="刷新 NAS 容量"><i data-lucide="refresh-cw"></i><span>刷新容量</span></button>
-            <button id="remountAllBtn" type="button" title="重新挂载全部来源"><i data-lucide="rotate-ccw"></i><span>重新挂载</span></button>
+            <button id="refreshCapacityBtn" type="button" title="刷新 NAS 容量" data-i18n-title="refreshCapacityTitle"><i data-lucide="refresh-cw"></i><span data-i18n="refreshCapacity">刷新容量</span></button>
+            <button id="remountAllBtn" type="button" title="重新挂载全部来源" data-i18n-title="remountAllTitle"><i data-lucide="rotate-ccw"></i><span data-i18n="remountAll">重新挂载</span></button>
           </div>
         </div>
         <div class="stats">
-          <div class="stat"><div class="stat-label">来源挂载</div><div class="stat-value" id="mountCount">--</div><div class="stat-detail" id="watchdogState">--</div></div>
-          <div class="stat"><div class="stat-label">已索引内容</div><div class="stat-value" id="indexedValue">--</div><div class="stat-detail" id="indexedDetail">--</div></div>
-          <div class="stat"><div class="stat-label">媒体登记队列</div><div class="stat-value" id="queueValue">--</div><div class="stat-detail" id="queueDetail">--</div></div>
-          <div class="stat"><div class="stat-label">NAS 可用空间</div><div class="stat-value" id="freeValue">--</div><div class="stat-detail" id="capacityUpdated">--</div></div>
+          <div class="stat"><div class="stat-label" data-i18n="mountSources">来源挂载</div><div class="stat-value" id="mountCount">--</div><div class="stat-detail" id="watchdogState">--</div></div>
+          <div class="stat"><div class="stat-label" data-i18n="indexedContent">已索引内容</div><div class="stat-value" id="indexedValue">--</div><div class="stat-detail" id="indexedDetail">--</div></div>
+          <div class="stat"><div class="stat-label" data-i18n="mediaQueue">媒体登记队列</div><div class="stat-value" id="queueValue">--</div><div class="stat-detail" id="queueDetail">--</div></div>
+          <div class="stat"><div class="stat-label" data-i18n="nasFreeSpace">NAS 可用空间</div><div class="stat-value" id="freeValue">--</div><div class="stat-detail" id="capacityUpdated">--</div></div>
         </div>
         <div class="visual-grid">
           <div class="chart-panel">
-            <div class="chart-head"><div class="chart-title">NAS 空间</div><div id="capacityChartMeta" class="chart-meta">--</div></div>
-            <div id="capacityChart" class="chart" role="img" aria-label="NAS 已使用和可用空间"></div>
+            <div class="chart-head"><div class="chart-title" data-i18n="nasSpace">NAS 空间</div><div id="capacityChartMeta" class="chart-meta">--</div></div>
+            <div id="capacityChart" class="chart" role="img" aria-label="NAS 已使用和可用空间" data-i18n-aria="capacityAria"></div>
           </div>
           <div class="chart-panel">
-            <div class="chart-head"><div class="chart-title">来源索引分布</div><div id="sourceChartMeta" class="chart-meta">--</div></div>
-            <div id="sourceChart" class="chart" role="img" aria-label="各来源已索引大小"></div>
+            <div class="chart-head"><div class="chart-title" data-i18n="sourceDistribution">来源索引分布</div><div id="sourceChartMeta" class="chart-meta">--</div></div>
+            <div id="sourceChart" class="chart" role="img" aria-label="各来源已索引大小" data-i18n-aria="sourceDistributionAria"></div>
           </div>
         </div>
       </section>
@@ -260,37 +279,37 @@
         <details id="connectionPanel" class="disclosure">
           <summary>
             <span class="disclosure-leading"><i data-lucide="server"></i></span>
-            <span class="disclosure-copy"><span class="disclosure-title">SMB 连接</span><span id="connectionSummary" class="disclosure-subtitle">尚未配置</span></span>
-            <span class="status-pill"><span id="connectionDot" class="dot"></span><span id="connectionState">未配置</span></span>
+            <span class="disclosure-copy"><span class="disclosure-title" data-i18n="connectionTitle">SMB 连接</span><span id="connectionSummary" class="disclosure-subtitle" data-i18n="remoteNotConfigured">尚未配置</span></span>
+            <span class="status-pill"><span id="connectionDot" class="dot"></span><span id="connectionState" data-i18n="notConfigured">未配置</span></span>
             <i class="chevron" data-lucide="chevron-down"></i>
           </summary>
           <div class="disclosure-body">
             <div class="connection-grid">
-              <div class="field"><label for="smbHost">远程地址</label><input id="smbHost" autocomplete="off" spellcheck="false" placeholder="192.168.1.10"></div>
-              <div class="field"><label for="smbPort">端口</label><input id="smbPort" type="number" min="1" max="65535" value="445"></div>
-              <div class="field"><label for="smbUser">账号</label><input id="smbUser" autocomplete="username" spellcheck="false"></div>
+              <div class="field"><label for="smbHost" data-i18n="host">远程地址</label><input id="smbHost" autocomplete="off" spellcheck="false" placeholder="192.168.1.10"></div>
+              <div class="field"><label for="smbPort" data-i18n="port">端口</label><input id="smbPort" type="number" min="1" max="65535" value="445"></div>
+              <div class="field"><label for="smbUser" data-i18n="username">账号</label><input id="smbUser" autocomplete="username" spellcheck="false"></div>
               <div class="field">
-                <label for="smbPassword">密码</label>
+                <label for="smbPassword" data-i18n="password">密码</label>
                 <div class="password-wrap"><input id="smbPassword" type="password" autocomplete="current-password"><button id="togglePasswordBtn" class="icon-only" type="button" title="显示密码" aria-label="显示密码"><i data-lucide="eye"></i></button></div>
-                <div id="passwordNote" class="field-note">尚未保存密码</div>
+                <div id="passwordNote" class="field-note" data-i18n="passwordNotSaved">尚未保存密码</div>
               </div>
-              <div class="field"><label for="smbDomain">域（可选）</label><input id="smbDomain" autocomplete="off" spellcheck="false" placeholder="WORKGROUP"></div>
+              <div class="field"><label for="smbDomain" data-i18n="domainOptional">域（可选）</label><input id="smbDomain" autocomplete="off" spellcheck="false" placeholder="WORKGROUP"></div>
             </div>
-            <div class="connection-actions"><button id="saveConnectionBtn" class="primary" type="button"><i data-lucide="shield-check"></i>测试并保存</button></div>
+            <div class="connection-actions"><button id="saveConnectionBtn" class="primary" type="button"><i data-lucide="shield-check"></i><span data-i18n="testAndSave">测试并保存</span></button></div>
           </div>
         </details>
       </section>
 
       <section class="page-section">
         <div class="section-head">
-          <div class="section-title"><span class="section-icon"><i data-lucide="folders"></i></span><h2>挂载来源</h2></div>
-          <button id="addSourceBtn" class="primary" type="button"><i data-lucide="folder-plus"></i>添加目录</button>
+          <div class="section-title"><span class="section-icon"><i data-lucide="folders"></i></span><h2 data-i18n="sourcesTitle">挂载来源</h2></div>
+          <button id="addSourceBtn" class="primary" type="button"><i data-lucide="folder-plus"></i><span data-i18n="addFolder">添加目录</span></button>
         </div>
         <div id="sourceList" class="source-list"></div>
         <div class="security-strip">
-          <span class="security-item"><i data-lucide="lock-keyhole"></i>凭据 0600</span>
-          <span class="security-item"><i data-lucide="eye-off"></i>只读挂载</span>
-          <span class="security-item"><i data-lucide="database"></i>独立去重索引</span>
+          <span class="security-item"><i data-lucide="lock-keyhole"></i><span data-i18n="credentials0600">凭据 0600</span></span>
+          <span class="security-item"><i data-lucide="eye-off"></i><span data-i18n="readOnly">只读挂载</span></span>
+          <span class="security-item"><i data-lucide="database"></i><span data-i18n="dedupeIndex">独立去重索引</span></span>
         </div>
       </section>
 
@@ -298,7 +317,7 @@
         <details id="logPanel" class="disclosure">
           <summary>
             <span class="disclosure-leading"><i data-lucide="file-clock"></i></span>
-            <span class="disclosure-copy"><span class="disclosure-title">运行日志</span><span class="disclosure-subtitle">最近 80 行</span></span>
+            <span class="disclosure-copy"><span class="disclosure-title" data-i18n="logTitle">运行日志</span><span class="disclosure-subtitle" data-i18n="last80Lines">最近 80 行</span></span>
             <i class="chevron" data-lucide="chevron-down"></i>
           </summary>
           <div class="disclosure-body"><pre id="logView">展开后读取日志</pre></div>
@@ -315,48 +334,48 @@
           <div class="source-title">
             <h3 class="source-title-text">新来源</h3>
             <div class="source-path">尚未选择远程目录</div>
-            <div class="source-status status-pill"><span class="dot source-dot"></span><span class="source-status-text">未挂载</span></div>
+            <div class="source-status status-pill"><span class="dot source-dot"></span><span class="source-status-text" data-i18n="unmounted">未挂载</span></div>
           </div>
         </div>
         <div class="source-facts">
-          <div class="source-fact"><div class="source-fact-label">上次扫描</div><div class="source-fact-value summary-last-scan">--</div></div>
-          <div class="source-fact"><div class="source-fact-label">已索引大小</div><div class="source-fact-value summary-bytes">--</div></div>
+          <div class="source-fact"><div class="source-fact-label" data-i18n="lastScan">上次扫描</div><div class="source-fact-value summary-last-scan">--</div></div>
+          <div class="source-fact"><div class="source-fact-label" data-i18n="indexedSize">已索引大小</div><div class="source-fact-value summary-bytes">--</div></div>
         </div>
         <div class="source-summary-end">
           <div class="source-actions">
-            <button class="scan-source" type="button" title="扫描新增"><i data-lucide="scan-search"></i>扫描新增</button>
-            <button class="remount-source" type="button" title="重新挂载"><i data-lucide="rotate-ccw"></i>重新挂载</button>
-            <button class="unmount-source" type="button" title="卸载"><i data-lucide="unlink"></i>卸载</button>
-            <button class="delete-source danger" type="button" title="移除来源"><i data-lucide="trash-2"></i>移除</button>
+            <button class="scan-source" type="button" title="扫描新增" data-i18n-title="scanNewTitle"><i data-lucide="scan-search"></i><span data-i18n="scanNew">扫描新增</span></button>
+            <button class="remount-source" type="button" title="重新挂载" data-i18n-title="remountTitle"><i data-lucide="rotate-ccw"></i><span data-i18n="remount">重新挂载</span></button>
+            <button class="unmount-source" type="button" title="卸载" data-i18n-title="unmountTitle"><i data-lucide="unlink"></i><span data-i18n="unmount">卸载</span></button>
+            <button class="delete-source danger" type="button" title="移除来源" data-i18n-title="removeTitle"><i data-lucide="trash-2"></i><span data-i18n="remove">移除</span></button>
           </div>
           <i class="chevron" data-lucide="chevron-down"></i>
         </div>
       </summary>
       <div class="source-body">
         <div class="source-grid">
-          <div class="field"><span class="field-label">NAS 目录</span><div class="remote-input"><input class="source-remote" autocomplete="off" spellcheck="false" placeholder="photo/目录"><button class="browse-source icon-only" type="button" title="浏览 SMB 目录" aria-label="浏览 SMB 目录"><i data-lucide="folder-search"></i></button></div></div>
-          <div class="field"><span class="field-label">本地相册目录名</span><input class="source-album" autocomplete="off" spellcheck="false" placeholder="NAS-Upload"></div>
-          <div class="field"><span class="field-label">扫描间隔（分钟）</span><input class="source-interval" type="number" min="15" max="10080"></div>
-          <div class="field"><span class="field-label">每批登记数</span><input class="source-batch" type="number" min="1" max="5000"></div>
+          <div class="field"><span class="field-label" data-i18n="nasFolder">NAS 目录</span><div class="remote-input"><input class="source-remote" autocomplete="off" spellcheck="false" placeholder="photo/目录" data-i18n-placeholder="remotePlaceholder"><button class="browse-source icon-only" type="button" title="浏览 SMB 目录" aria-label="浏览 SMB 目录" data-i18n-title="browseSmb" data-i18n-aria="browseSmb"><i data-lucide="folder-search"></i></button></div></div>
+          <div class="field"><span class="field-label" data-i18n="albumFolder">本地相册目录名</span><input class="source-album" autocomplete="off" spellcheck="false" placeholder="NAS-Upload"></div>
+          <div class="field"><span class="field-label" data-i18n="scanInterval">扫描间隔（分钟）</span><input class="source-interval" type="number" min="15" max="10080"></div>
+          <div class="field"><span class="field-label" data-i18n="batchSize">每批登记数</span><input class="source-batch" type="number" min="1" max="5000"></div>
         </div>
         <div class="source-options">
-          <label><input class="source-enabled" type="checkbox">启用来源</label>
-          <label><input class="source-auto-scan" type="checkbox">自动扫描</label>
+          <label><input class="source-enabled" type="checkbox"><span data-i18n="enableSource">启用来源</span></label>
+          <label><input class="source-auto-scan" type="checkbox"><span data-i18n="autoScan">自动扫描</span></label>
           <span class="source-filter-count">0 条忽略规则</span>
           <span class="source-detail-status">文件 -- · 待登记 --</span>
         </div>
-        <div class="rules-head"><span class="field-label">忽略规则</span><span class="field-note">Syncthing .stignore</span></div>
-        <textarea class="source-ignore" spellcheck="false" aria-label="来源忽略规则"></textarea>
-        <div class="source-save"><button class="save-source primary" type="button"><i data-lucide="save"></i>保存来源</button></div>
+        <div class="rules-head"><span class="field-label" data-i18n="ignoreRulesLabel">忽略规则</span><span class="field-note">Syncthing .stignore</span></div>
+        <textarea class="source-ignore" spellcheck="false" aria-label="来源忽略规则" data-i18n-aria="ignoreRulesAria"></textarea>
+        <div class="source-save"><button class="save-source primary" type="button"><i data-lucide="save"></i><span data-i18n="saveSource">保存来源</span></button></div>
       </div>
     </details>
   </template>
 
-  <div id="browserModal" class="modal-backdrop hidden" role="dialog" aria-modal="true" aria-label="浏览 SMB 目录">
+  <div id="browserModal" class="modal-backdrop hidden" role="dialog" aria-modal="true" aria-label="浏览 SMB 目录" data-i18n-aria="browserAria">
     <div class="modal">
-      <div class="modal-head"><div id="browserPath" class="browser-path"><i data-lucide="network"></i><span>NAS 根目录</span></div><button id="closeBrowserBtn" class="icon-only" type="button" title="关闭" aria-label="关闭"><i data-lucide="x"></i></button></div>
+      <div class="modal-head"><div id="browserPath" class="browser-path"><i data-lucide="network"></i><span>NAS 根目录</span></div><button id="closeBrowserBtn" class="icon-only" type="button" title="关闭" aria-label="关闭" data-i18n-title="close" data-i18n-aria="close"><i data-lucide="x"></i></button></div>
       <div id="folderList" class="folder-list"></div>
-      <div class="modal-foot"><button id="upBrowserBtn" type="button"><i data-lucide="arrow-up"></i>上一级</button><button id="chooseBrowserBtn" class="primary" type="button"><i data-lucide="check"></i>选择此目录</button></div>
+      <div class="modal-foot"><button id="upBrowserBtn" type="button"><i data-lucide="arrow-up"></i><span data-i18n="upOne">上一级</span></button><button id="chooseBrowserBtn" class="primary" type="button"><i data-lucide="check"></i><span data-i18n="chooseFolder">选择此目录</span></button></div>
     </div>
   </div>
 
@@ -368,17 +387,124 @@
     const token = location.hash.slice(1);
     const $ = (id) => document.getElementById(id);
     const reduceMotion = matchMedia('(prefers-reduced-motion: reduce)').matches;
+    const languageStorageKey = 'nas-photos-language';
+    const messages = {
+      zh: {
+        languageSwitch: '语言', authTitle: '管理面板不可用', authHint: '请从 Magisk 模块操作入口重新打开。',
+        statusReading: '正在读取状态', statusChecking: '检查中', overviewTitle: '运行概览', refreshCapacity: '刷新容量', refreshCapacityTitle: '刷新 NAS 容量', remountAll: '重新挂载', remountAllTitle: '重新挂载全部来源',
+        mountSources: '来源挂载', indexedContent: '已索引内容', mediaQueue: '媒体登记队列', nasFreeSpace: 'NAS 可用空间', nasSpace: 'NAS 空间', capacityAria: 'NAS 已使用和可用空间', sourceDistribution: '来源索引分布', sourceDistributionAria: '各来源已索引大小',
+        connectionTitle: 'SMB 连接', host: '远程地址', port: '端口', username: '账号', password: '密码', showPassword: '显示密码', hidePassword: '隐藏密码', domainOptional: '域（可选）', testAndSave: '测试并保存',
+        passwordNotSaved: '尚未保存密码', passwordSavedNote: '密码已保存，接口不会回显', passwordKeepPlaceholder: '留空以保留已保存密码', passwordInputPlaceholder: '输入 SMB 密码', smbNotConfigured: '尚未配置 SMB', remoteNotConfigured: '尚未配置远程地址', configured: '已配置', notConfigured: '未配置', connected: '已连接', partiallyOnline: '部分在线',
+        sourcesTitle: '挂载来源', addFolder: '添加目录', credentials0600: '凭据 0600', readOnly: '只读挂载', dedupeIndex: '独立去重索引', logTitle: '运行日志', last80Lines: '最近 80 行', logExpandHint: '展开后读取日志', noLogs: '暂无日志',
+        newSource: '新来源', noRemotePath: '尚未选择远程目录', unmounted: '未挂载', stopped: '已停用', mounted: '已挂载', lastScan: '上次扫描', indexedSize: '已索引大小', scanNew: '扫描新增', scanNewTitle: '扫描新增', remount: '重新挂载', remountTitle: '重新挂载', unmount: '卸载', unmountTitle: '卸载', remove: '移除', removeTitle: '移除来源', cancel: '取消', cancelTitle: '取消新增',
+        nasFolder: 'NAS 目录', browseSmb: '浏览 SMB 目录', remotePlaceholder: 'photo/目录', albumFolder: '本地相册目录名', scanInterval: '扫描间隔（分钟）', batchSize: '每批登记数', enableSource: '启用来源', autoScan: '自动扫描', ignoreRulesLabel: '忽略规则', ignoreRulesAria: '来源忽略规则', saveSource: '保存来源',
+        browserAria: '浏览 SMB 目录', nasRoot: 'NAS 根目录', close: '关闭', upOne: '上一级', chooseFolder: '选择此目录', folderLoading: '正在读取目录', noSubfolders: '没有子目录', enterFolder: '进入 {name}', folderReadFailed: '读取失败：{error}', chooseFolderFirst: '请选择共享目录或其子目录',
+        apiSmbLoginFailed: 'SMB 登录失败', apiInvalidRemotePath: '远程目录格式无效', apiInvalidAlbumName: '本地相册名称无效', apiDuplicateAlbumName: '本地相册名称已被使用', apiRemoteFilterFailed: '远程目录或忽略规则验证失败', apiBrowseFailed: '目录读取失败', apiSourceLimit: '来源数量已达到上限',
+        notScanned: '尚未扫描', justNow: '刚刚', 'minuteAgo.one': '{count} 分钟前', 'minuteAgo.other': '{count} 分钟前', 'hourAgo.one': '{count} 小时前', 'hourAgo.other': '{count} 小时前', 'dayAgo.one': '{count} 天前', 'dayAgo.other': '{count} 天前',
+        scanIdle: '空闲', scanScanning: '扫描中', scanError: '扫描异常', scanNotStarted: '未扫描', used: '已使用', available: '可用', capacityChartDescription: 'NAS 空间：已使用 {used}，可用 {free}。', 'sourceChartDescription.one': '{count} 个来源，已索引 {size}。', 'sourceChartDescription.other': '{count} 个来源，已索引 {size}。', 'sourcesMeta.one': '{count} 个来源 · {size}', 'sourcesMeta.other': '{count} 个来源 · {size}', noSources: '暂无来源', indexedTooltip: '已索引 {size}', pendingTooltip: '待登记 {count}',
+        'ignoreRules.one': '{count} 条忽略规则', 'ignoreRules.other': '{count} 条忽略规则', filesPending: '文件 {files} · 待登记 {pending}', saveDraftFirst: '请先保存当前新来源', connectionSuccess: 'SMB 验证成功，正在重新挂载', connectionFailed: '连接失败：{error}', sourceSaved: '来源已保存，正在应用挂载条件', saveFailed: '保存失败：{error}', removeConfirm: '移除来源“{album}”？去重状态会被归档保留。', sourceArchived: '来源已卸载并归档', removeFailed: '移除失败：{error}', saveSourceFirst: '请先保存来源', operationFailed: '操作失败：{error}',
+        refreshingCapacity: '正在刷新 NAS 容量', remountingAll: '正在重新挂载全部来源', scanStarted: '增量扫描已开始', remountingSource: '正在重新挂载来源', unmountingSource: '正在卸载来源', noEnabled: '无启用来源', allOnline: '全部在线', onlineCount: '{mounted}/{enabled} 在线', watchdogOk: '守护进程正常', watchdogError: '守护进程异常', 'indexedItems.one': '{count} 项', 'indexedItems.other': '{count} 项', 'pendingItems.one': '{count} 待登记', 'pendingItems.other': '{count} 待登记', 'sourcesScanning.one': '{count} 个来源扫描中', 'sourcesScanning.other': '{count} 个来源扫描中', noScan: '当前无扫描任务', capacityUpdated: '{time}更新', neverUpdated: '尚未更新', mountedStatus: '已挂载 · {scan}',
+      },
+      en: {
+        languageSwitch: 'Language', authTitle: 'Management panel unavailable', authHint: 'Open it again from the Magisk module action.',
+        statusReading: 'Loading status', statusChecking: 'Checking', overviewTitle: 'Overview', refreshCapacity: 'Refresh capacity', refreshCapacityTitle: 'Refresh NAS capacity', remountAll: 'Remount all', remountAllTitle: 'Remount all sources',
+        mountSources: 'Mounted sources', indexedContent: 'Indexed content', mediaQueue: 'Media registration queue', nasFreeSpace: 'NAS free space', nasSpace: 'NAS storage', capacityAria: 'Used and available NAS storage', sourceDistribution: 'Indexed data by source', sourceDistributionAria: 'Indexed size for each source',
+        connectionTitle: 'SMB connection', host: 'Remote address', port: 'Port', username: 'Username', password: 'Password', showPassword: 'Show password', hidePassword: 'Hide password', domainOptional: 'Domain (optional)', testAndSave: 'Test and save',
+        passwordNotSaved: 'No password saved', passwordSavedNote: 'Password saved; the API never returns it', passwordKeepPlaceholder: 'Leave blank to keep the saved password', passwordInputPlaceholder: 'Enter SMB password', smbNotConfigured: 'SMB not configured', remoteNotConfigured: 'Remote address not configured', configured: 'Configured', notConfigured: 'Not configured', connected: 'Connected', partiallyOnline: 'Partially online',
+        sourcesTitle: 'Mount sources', addFolder: 'Add folder', credentials0600: 'Credentials 0600', readOnly: 'Read-only mounts', dedupeIndex: 'Independent dedupe index', logTitle: 'Runtime log', last80Lines: 'Latest 80 lines', logExpandHint: 'Expand to load the log', noLogs: 'No log entries',
+        newSource: 'New source', noRemotePath: 'No remote folder selected', unmounted: 'Unmounted', stopped: 'Disabled', mounted: 'Mounted', lastScan: 'Last scan', indexedSize: 'Indexed size', scanNew: 'Scan new', scanNewTitle: 'Scan for new media', remount: 'Remount', remountTitle: 'Remount source', unmount: 'Unmount', unmountTitle: 'Unmount source', remove: 'Remove', removeTitle: 'Remove source', cancel: 'Cancel', cancelTitle: 'Cancel new source',
+        nasFolder: 'NAS folder', browseSmb: 'Browse SMB folders', remotePlaceholder: 'photo/folder', albumFolder: 'Local album folder', scanInterval: 'Scan interval (minutes)', batchSize: 'Registration batch size', enableSource: 'Enable source', autoScan: 'Automatic scan', ignoreRulesLabel: 'Ignore rules', ignoreRulesAria: 'Source ignore rules', saveSource: 'Save source',
+        browserAria: 'Browse SMB folders', nasRoot: 'NAS root', close: 'Close', upOne: 'Up one level', chooseFolder: 'Choose this folder', folderLoading: 'Loading folders', noSubfolders: 'No subfolders', enterFolder: 'Open {name}', folderReadFailed: 'Could not load folders: {error}', chooseFolderFirst: 'Choose a share or one of its subfolders',
+        apiSmbLoginFailed: 'SMB sign-in failed', apiInvalidRemotePath: 'Invalid remote folder', apiInvalidAlbumName: 'Invalid local album name', apiDuplicateAlbumName: 'That local album name is already in use', apiRemoteFilterFailed: 'Remote folder or ignore-rule validation failed', apiBrowseFailed: 'Could not list folders', apiSourceLimit: 'Source limit reached',
+        notScanned: 'Not scanned', justNow: 'Just now', 'minuteAgo.one': '{count} minute ago', 'minuteAgo.other': '{count} minutes ago', 'hourAgo.one': '{count} hour ago', 'hourAgo.other': '{count} hours ago', 'dayAgo.one': '{count} day ago', 'dayAgo.other': '{count} days ago',
+        scanIdle: 'Idle', scanScanning: 'Scanning', scanError: 'Scan error', scanNotStarted: 'Not scanned', used: 'Used', available: 'Available', capacityChartDescription: 'NAS storage: {used} used and {free} available.', 'sourceChartDescription.one': '{count} source with {size} indexed.', 'sourceChartDescription.other': '{count} sources with {size} indexed.', 'sourcesMeta.one': '{count} source · {size}', 'sourcesMeta.other': '{count} sources · {size}', noSources: 'No sources', indexedTooltip: 'Indexed {size}', pendingTooltip: 'Pending {count}',
+        'ignoreRules.one': '{count} ignore rule', 'ignoreRules.other': '{count} ignore rules', filesPending: 'Files {files} · Pending {pending}', saveDraftFirst: 'Save the current new source first', connectionSuccess: 'SMB verified; remounting sources', connectionFailed: 'Connection failed: {error}', sourceSaved: 'Source saved; applying mount settings', saveFailed: 'Save failed: {error}', removeConfirm: 'Remove source “{album}”? Its dedupe state will be archived.', sourceArchived: 'Source unmounted and archived', removeFailed: 'Remove failed: {error}', saveSourceFirst: 'Save the source first', operationFailed: 'Operation failed: {error}',
+        refreshingCapacity: 'Refreshing NAS capacity', remountingAll: 'Remounting all sources', scanStarted: 'Incremental scan started', remountingSource: 'Remounting source', unmountingSource: 'Unmounting source', noEnabled: 'No enabled sources', allOnline: 'All online', onlineCount: '{mounted}/{enabled} online', watchdogOk: 'Watchdog is running', watchdogError: 'Watchdog error', 'indexedItems.one': '{count} item', 'indexedItems.other': '{count} items', 'pendingItems.one': '{count} pending', 'pendingItems.other': '{count} pending', 'sourcesScanning.one': '{count} source scanning', 'sourcesScanning.other': '{count} sources scanning', noScan: 'No scans in progress', capacityUpdated: 'Updated {time}', neverUpdated: 'Not updated yet', mountedStatus: 'Mounted · {scan}',
+      },
+    };
+
+    const getInitialLanguage = () => {
+      try {
+        const stored = localStorage.getItem(languageStorageKey);
+        if (stored === 'zh' || stored === 'en') return stored;
+      } catch (_) {}
+      return navigator.language.toLowerCase().startsWith('zh') ? 'zh' : 'en';
+    };
+    let language = getInitialLanguage();
     let defaultIgnore = '';
     let browsePath = '';
     let browseInput = null;
     let busy = false;
     let capacityChart = null;
     let sourceChart = null;
+    let latestConnection = null;
     let latestStatus = null;
+    let logLoaded = false;
+    let logEmpty = false;
     const sourceConfig = new Map();
     const shownErrors = new Map();
 
+    const locale = () => language === 'zh' ? 'zh-CN' : 'en-US';
+    const t = (key, params = {}) => {
+      const template = messages[language][key] ?? messages.zh[key] ?? key;
+      return Object.entries(params).reduce((text, [name, value]) => text.split(`{${name}}`).join(value), template);
+    };
+    const tCount = (key, count, params = {}) => t(`${key}.${Number(count) === 1 ? 'one' : 'other'}`, { count: formatNumber(count), ...params });
+    const formatNumber = (value) => Number(value || 0).toLocaleString(locale());
+    const elementsWithin = (root, selector) => [
+      ...(root.matches?.(selector) ? [root] : []),
+      ...root.querySelectorAll(selector),
+    ];
+    const applyTranslations = (root = document) => {
+      elementsWithin(root, '[data-i18n]').forEach((element) => { element.textContent = t(element.dataset.i18n); });
+      elementsWithin(root, '[data-i18n-title]').forEach((element) => { element.title = t(element.dataset.i18nTitle); });
+      elementsWithin(root, '[data-i18n-placeholder]').forEach((element) => { element.placeholder = t(element.dataset.i18nPlaceholder); });
+      elementsWithin(root, '[data-i18n-aria]').forEach((element) => { element.setAttribute('aria-label', t(element.dataset.i18nAria)); });
+    };
     const renderIcons = () => { if (window.lucide) window.lucide.createIcons(); };
+    const setPasswordIcon = (visible) => {
+      const button = $('togglePasswordBtn');
+      button.innerHTML = `<i data-lucide="${visible ? 'eye-off' : 'eye'}"></i>`;
+      button.title = t(visible ? 'hidePassword' : 'showPassword');
+      button.setAttribute('aria-label', button.title);
+      renderIcons();
+    };
+    const refreshSourceIdentity = (card) => {
+      const album = card.querySelector('.source-album').value.trim();
+      const remote = card.querySelector('.source-remote').value.trim();
+      card.dataset.albumName = album || t('newSource');
+      card.querySelector('.source-title-text').textContent = album || t('newSource');
+      card.querySelector('.source-path').textContent = remote ? `nas:${remote}` : t('noRemotePath');
+      card.updateFilterCount?.();
+    };
+    const refreshSourceCards = () => document.querySelectorAll('.source-card').forEach(refreshSourceIdentity);
+    const renderConnectionText = (data) => {
+      if (!data) return;
+      $('smbPassword').placeholder = data.hasPassword ? t('passwordKeepPlaceholder') : t('passwordInputPlaceholder');
+      $('passwordNote').textContent = data.hasPassword ? t('passwordSavedNote') : t('passwordNotSaved');
+      $('activeSummary').textContent = data.host ? `${data.host}:${data.port}` : t('smbNotConfigured');
+      $('connectionSummary').textContent = data.host ? `${data.host}:${data.port} · ${data.username}${data.domain ? ` · ${data.domain}` : ''}` : t('remoteNotConfigured');
+      $('connectionState').textContent = data.hasPassword ? t('configured') : t('notConfigured');
+    };
+    const setLanguage = (nextLanguage, persist = true) => {
+      language = nextLanguage === 'en' ? 'en' : 'zh';
+      document.documentElement.lang = language === 'zh' ? 'zh-CN' : 'en';
+      if (persist) {
+        try { localStorage.setItem(languageStorageKey, language); } catch (_) {}
+      }
+      applyTranslations();
+      document.querySelectorAll('.language-option').forEach((button) => {
+        button.setAttribute('aria-pressed', String(button.dataset.language === language));
+      });
+      setPasswordIcon($('smbPassword').type !== 'password');
+      renderConnectionText(latestConnection);
+      refreshSourceCards();
+      if (latestStatus) renderStatus(latestStatus);
+      if (!logLoaded) $('logView').textContent = t('logExpandHint');
+      else if (logEmpty) $('logView').textContent = t('noLogs');
+      if (!$('browserModal').classList.contains('hidden')) loadFolders(browsePath).catch(() => {});
+    };
+
     const api = async (path, options = {}) => {
       const headers = new Headers(options.headers || {});
       headers.set('X-NAS-Token', token);
@@ -387,12 +513,11 @@
         let code = `HTTP ${response.status}`;
         try { code = (await response.json()).error || code; } catch (_) {}
         const labels = {
-          smb_login_failed: 'SMB 登录失败', invalid_remote_path: '远程目录格式无效',
-          invalid_album_name: '本地相册名称无效', duplicate_album_name: '本地相册名称已被使用',
-          remote_or_filter_validation_failed: '远程目录或忽略规则验证失败',
-          browse_failed: '目录读取失败', source_limit_reached: '来源数量已达到上限',
+          smb_login_failed: 'apiSmbLoginFailed', invalid_remote_path: 'apiInvalidRemotePath',
+          invalid_album_name: 'apiInvalidAlbumName', duplicate_album_name: 'apiDuplicateAlbumName',
+          remote_or_filter_validation_failed: 'apiRemoteFilterFailed', browse_failed: 'apiBrowseFailed', source_limit_reached: 'apiSourceLimit',
         };
-        throw new Error(labels[code] || code);
+        throw new Error(labels[code] ? t(labels[code]) : code);
       }
       return response;
     };
@@ -408,17 +533,17 @@
       const index = Math.min(Math.floor(Math.log(size) / Math.log(1024)), units.length - 1);
       return `${(size / 1024 ** index).toFixed(index > 2 ? 2 : 1)} ${units[index]}`;
     };
-    const formatTime = (epoch) => Number(epoch) ? new Date(Number(epoch) * 1000).toLocaleString() : '尚未扫描';
+    const formatTime = (epoch) => Number(epoch) ? new Date(Number(epoch) * 1000).toLocaleString(locale()) : t('notScanned');
     const formatRelativeTime = (epoch, serverTime) => {
-      if (!Number(epoch)) return '尚未扫描';
+      if (!Number(epoch)) return t('notScanned');
       const seconds = Math.max(0, Number(serverTime || Date.now() / 1000) - Number(epoch));
-      if (seconds < 60) return '刚刚';
-      if (seconds < 3600) return `${Math.floor(seconds / 60)} 分钟前`;
-      if (seconds < 86400) return `${Math.floor(seconds / 3600)} 小时前`;
-      if (seconds < 604800) return `${Math.floor(seconds / 86400)} 天前`;
-      return new Date(Number(epoch) * 1000).toLocaleDateString();
+      if (seconds < 60) return t('justNow');
+      if (seconds < 3600) return tCount('minuteAgo', Math.floor(seconds / 60));
+      if (seconds < 86400) return tCount('hourAgo', Math.floor(seconds / 3600));
+      if (seconds < 604800) return tCount('dayAgo', Math.floor(seconds / 86400));
+      return new Date(Number(epoch) * 1000).toLocaleDateString(locale());
     };
-    const scanLabel = (value) => ({ idle: '空闲', scanning: '扫描中', error: '扫描异常', not_started: '未扫描' }[value] || value);
+    const scanLabel = (value) => ({ idle: t('scanIdle'), scanning: t('scanScanning'), error: t('scanError'), not_started: t('scanNotStarted') }[value] || value);
     const showToast = (message) => {
       $('toast').textContent = message;
       $('toast').classList.add('visible');
@@ -430,13 +555,6 @@
       document.querySelectorAll('button').forEach((button) => {
         button.disabled = value || button.classList.contains('draft-action-disabled');
       });
-    };
-    const setPasswordIcon = (visible) => {
-      const button = $('togglePasswordBtn');
-      button.innerHTML = `<i data-lucide="${visible ? 'eye-off' : 'eye'}"></i>`;
-      button.title = visible ? '隐藏密码' : '显示密码';
-      button.setAttribute('aria-label', button.title);
-      renderIcons();
     };
 
     function initCharts() {
@@ -457,13 +575,13 @@
         animationDuration: reduceMotion ? 0 : 240,
         color: ['#0f766e', '#e4ebe8'],
         tooltip: { trigger: 'item', borderWidth: 0, backgroundColor: '#17211e', textStyle: { color: '#fff', fontSize: 12 }, formatter: (item) => `${item.name}<br>${formatBytes(item.value)}` },
-        aria: { enabled: true },
+        aria: { enabled: true, description: t('capacityChartDescription', { used: formatBytes(used), free: formatBytes(free) }) },
         series: [{
           type: 'pie', radius: ['61%', '82%'], center: ['50%', '50%'], silent: false,
           label: { show: false }, labelLine: { show: false }, emphasis: { scaleSize: 3 },
-          data: [{ value: used, name: '已使用' }, { value: free, name: '可用' }],
+          data: [{ value: used, name: t('used') }, { value: free, name: t('available') }],
         }],
-        graphic: [{ type: 'text', left: 'center', top: '39%', style: { text: `${percent}%`, fill: '#17201d', fontSize: 25, fontWeight: 700, textAlign: 'center' } }, { type: 'text', left: 'center', top: '56%', style: { text: '已使用', fill: '#64716c', fontSize: 11, textAlign: 'center' } }],
+        graphic: [{ type: 'text', left: 'center', top: '39%', style: { text: `${percent}%`, fill: '#17201d', fontSize: 25, fontWeight: 700, textAlign: 'center' } }, { type: 'text', left: 'center', top: '56%', style: { text: t('used'), fill: '#64716c', fontSize: 11, textAlign: 'center' } }],
       }, true);
 
       const rows = data.sources.map((state) => {
@@ -471,14 +589,14 @@
         return { ...state, name: config.albumName || state.id };
       }).sort((a, b) => Number(a.currentBytes) - Number(b.currentBytes));
       const compactChart = innerWidth < 620;
-      $('sourceChartMeta').textContent = rows.length ? `${rows.length} 个来源 · ${formatBytes(data.totalBytes)}` : '暂无来源';
+      $('sourceChartMeta').textContent = rows.length ? tCount('sourcesMeta', rows.length, { size: formatBytes(data.totalBytes) }) : t('noSources');
       const maxVisible = 6;
       const zoomStart = rows.length > maxVisible ? Math.max(0, 100 - maxVisible / rows.length * 100) : 0;
       sourceChart.setOption({
         animationDuration: reduceMotion ? 0 : 240,
         grid: { left: compactChart ? 8 : 14, right: rows.length > maxVisible ? 68 : 58, top: 15, bottom: 22, containLabel: true },
-        tooltip: { trigger: 'axis', axisPointer: { type: 'shadow' }, borderWidth: 0, backgroundColor: '#17211e', textStyle: { color: '#fff', fontSize: 12 }, formatter: (items) => { const row = rows[items[0].dataIndex]; return `${row.name}<br>已索引 ${formatBytes(row.currentBytes)}<br>待登记 ${Number(row.pendingFiles).toLocaleString()}`; } },
-        aria: { enabled: true },
+        tooltip: { trigger: 'axis', axisPointer: { type: 'shadow' }, borderWidth: 0, backgroundColor: '#17211e', textStyle: { color: '#fff', fontSize: 12 }, formatter: (items) => { const row = rows[items[0].dataIndex]; return `${row.name}<br>${t('indexedTooltip', { size: formatBytes(row.currentBytes) })}<br>${t('pendingTooltip', { count: formatNumber(row.pendingFiles) })}`; } },
+        aria: { enabled: true, description: tCount('sourceChartDescription', rows.length, { size: formatBytes(data.totalBytes) }) },
         xAxis: { type: 'value', splitNumber: compactChart ? 2 : 5, axisLabel: { color: '#7b8782', fontSize: compactChart ? 10 : 12, hideOverlap: true, formatter: (value) => formatBytes(value) }, splitLine: { lineStyle: { color: '#edf1ef' } }, axisLine: { show: false }, axisTick: { show: false } },
         yAxis: { type: 'category', data: rows.map((row) => row.name), axisLabel: { color: '#44504c', width: compactChart ? 100 : 120, overflow: 'truncate' }, axisLine: { show: false }, axisTick: { show: false } },
         dataZoom: rows.length > maxVisible ? [{ type: 'inside', yAxisIndex: 0, start: zoomStart, end: 100 }, { type: 'slider', yAxisIndex: 0, start: zoomStart, end: 100, width: 10, right: 6, showDetail: false, borderColor: 'transparent', fillerColor: 'rgba(15,118,110,.18)', handleSize: 0 }] : [],
@@ -488,16 +606,13 @@
 
     async function loadConnection(collapse = false) {
       const data = await (await api('/cgi-bin/connection')).json();
+      latestConnection = data;
       $('smbHost').value = data.host;
       $('smbPort').value = data.port || 445;
       $('smbUser').value = data.username;
       $('smbDomain').value = data.domain;
       $('smbPassword').value = '';
-      $('smbPassword').placeholder = data.hasPassword ? '留空以保留已保存密码' : '输入 SMB 密码';
-      $('passwordNote').textContent = data.hasPassword ? '密码已保存，接口不会回显' : '尚未保存密码';
-      $('activeSummary').textContent = data.host ? `${data.host}:${data.port}` : '尚未配置 SMB';
-      $('connectionSummary').textContent = data.host ? `${data.host}:${data.port} · ${data.username}${data.domain ? ` · ${data.domain}` : ''}` : '尚未配置远程地址';
-      $('connectionState').textContent = data.hasPassword ? '已配置' : '未配置';
+      renderConnectionText(data);
       $('connectionDot').className = `dot ${data.hasPassword ? 'warn' : ''}`;
       if (collapse || !data.hasPassword) $('connectionPanel').open = !data.hasPassword;
     }
@@ -505,12 +620,9 @@
     function createSourceCard(source, draft = false) {
       const card = $('sourceTemplate').content.firstElementChild.cloneNode(true);
       card.dataset.sourceId = source.id || '';
-      card.dataset.albumName = source.albumName || '新来源';
       card.open = draft;
       if (draft) card.classList.add('draft');
       card.querySelector('.source-enabled').checked = Boolean(source.enabled);
-      card.querySelector('.source-title-text').textContent = source.albumName || '新来源';
-      card.querySelector('.source-path').textContent = source.remotePath ? `nas:${source.remotePath}` : '尚未选择远程目录';
       card.querySelector('.source-remote').value = source.remotePath || '';
       card.querySelector('.source-album').value = source.albumName || '';
       card.querySelector('.source-interval').value = source.scanIntervalMinutes || 360;
@@ -520,25 +632,27 @@
       const filterCount = card.querySelector('.source-filter-count');
       const updateFilterCount = () => {
         const count = ignoreField.value.split(/\r?\n/).map((line) => line.trim()).filter((line) => line && !line.startsWith('#')).length;
-        filterCount.textContent = `${count} 条忽略规则`;
+        filterCount.textContent = tCount('ignoreRules', count);
       };
+      card.updateFilterCount = updateFilterCount;
       ignoreField.value = source.ignoreRules ?? defaultIgnore;
       ignoreField.addEventListener('input', updateFilterCount);
-      updateFilterCount();
 
       card.querySelector('.source-actions').addEventListener('click', (event) => { event.preventDefault(); event.stopPropagation(); });
       card.querySelector('.browse-source').addEventListener('click', () => openBrowser(card.querySelector('.source-remote')));
       card.querySelector('.save-source').addEventListener('click', () => saveSource(card));
-      card.querySelector('.scan-source').addEventListener('click', () => runSourceAction(card, 'scan', '增量扫描已开始'));
-      card.querySelector('.remount-source').addEventListener('click', () => runSourceAction(card, 'remount', '正在重新挂载来源'));
-      card.querySelector('.unmount-source').addEventListener('click', () => runSourceAction(card, 'unmount', '正在卸载来源'));
+      card.querySelector('.scan-source').addEventListener('click', () => runSourceAction(card, 'scan', 'scanStarted'));
+      card.querySelector('.remount-source').addEventListener('click', () => runSourceAction(card, 'remount', 'remountingSource'));
+      card.querySelector('.unmount-source').addEventListener('click', () => runSourceAction(card, 'unmount', 'unmountingSource'));
       card.querySelector('.delete-source').addEventListener('click', () => deleteSource(card));
       if (draft) {
         card.querySelectorAll('.source-actions button:not(.delete-source)').forEach((button) => { button.classList.add('draft-action-disabled'); button.disabled = true; });
         const cancelButton = card.querySelector('.delete-source');
-        cancelButton.title = '取消新增';
-        cancelButton.innerHTML = '<i data-lucide="x"></i>取消';
+        cancelButton.dataset.i18nTitle = 'cancelTitle';
+        cancelButton.innerHTML = '<i data-lucide="x"></i><span data-i18n="cancel"></span>';
       }
+      applyTranslations(card);
+      refreshSourceIdentity(card);
       return card;
     }
 
@@ -559,7 +673,7 @@
     function addDraftSource() {
       if (busy) return;
       const existingDraft = document.querySelector('.source-card.draft');
-      if (existingDraft) { existingDraft.open = true; existingDraft.scrollIntoView({ behavior: reduceMotion ? 'auto' : 'smooth', block: 'start' }); return showToast('请先保存当前新来源'); }
+      if (existingDraft) { existingDraft.open = true; existingDraft.scrollIntoView({ behavior: reduceMotion ? 'auto' : 'smooth', block: 'start' }); return showToast(t('saveDraftFirst')); }
       const existing = document.querySelectorAll('.source-card').length;
       const draft = { id: '', remotePath: '', albumName: `NAS-Upload-${existing + 1}`, enabled: 1, autoScan: 1, scanIntervalMinutes: 360, scanBatchSize: 500, ignoreRules: defaultIgnore };
       const card = createSourceCard(draft, true);
@@ -573,10 +687,10 @@
       try {
         const body = new URLSearchParams({ host: $('smbHost').value.trim(), port: $('smbPort').value, username: $('smbUser').value, password: $('smbPassword').value, domain: $('smbDomain').value.trim() });
         await api('/cgi-bin/connection', { method: 'POST', headers: { 'Content-Type': 'application/x-www-form-urlencoded;charset=UTF-8' }, body });
-        showToast('SMB 验证成功，正在重新挂载');
+        showToast(t('connectionSuccess'));
         await loadConnection(true);
         setTimeout(() => loadStatus().catch(() => {}), 1600);
-      } catch (error) { showToast(`连接失败：${error.message}`); }
+      } catch (error) { showToast(t('connectionFailed', { error: error.message })); }
       finally { setBusy(false); }
     }
 
@@ -591,10 +705,10 @@
           ignoreRules: card.querySelector('.source-ignore').value,
         });
         await api('/cgi-bin/sources', { method: 'POST', headers: { 'Content-Type': 'application/x-www-form-urlencoded;charset=UTF-8' }, body });
-        showToast('来源已保存，正在应用挂载条件');
+        showToast(t('sourceSaved'));
         await loadSources();
         setTimeout(() => loadStatus().catch(() => {}), 1600);
-      } catch (error) { showToast(`保存失败：${error.message}`); }
+      } catch (error) { showToast(t('saveFailed', { error: error.message })); }
       finally { setBusy(false); }
     }
 
@@ -602,71 +716,70 @@
       const sourceId = card.dataset.sourceId;
       if (!sourceId) { card.remove(); return; }
       const album = card.querySelector('.source-album').value;
-      if (!confirm(`移除来源“${album}”？去重状态会被归档保留。`)) return;
+      if (!confirm(t('removeConfirm', { album }))) return;
       setBusy(true);
       try {
         const body = new URLSearchParams({ operation: 'delete', sourceId });
         await api('/cgi-bin/sources', { method: 'POST', headers: { 'Content-Type': 'application/x-www-form-urlencoded;charset=UTF-8' }, body });
-        showToast('来源已卸载并归档');
+        showToast(t('sourceArchived'));
         await loadSources();
         await loadStatus();
-      } catch (error) { showToast(`移除失败：${error.message}`); }
+      } catch (error) { showToast(t('removeFailed', { error: error.message })); }
       finally { setBusy(false); }
     }
 
-    async function runSourceAction(card, action, message) {
+    async function runSourceAction(card, action, messageKey) {
       const sourceId = card.dataset.sourceId;
-      if (!sourceId) return showToast('请先保存来源');
+      if (!sourceId) return showToast(t('saveSourceFirst'));
       setBusy(true);
       try {
         const body = new URLSearchParams({ action, sourceId });
         await api('/cgi-bin/action', { method: 'POST', headers: { 'Content-Type': 'application/x-www-form-urlencoded;charset=UTF-8' }, body });
-        showToast(message);
+        showToast(t(messageKey));
         setTimeout(() => loadStatus().catch(() => {}), 1200);
-      } catch (error) { showToast(`操作失败：${error.message}`); }
+      } catch (error) { showToast(t('operationFailed', { error: error.message })); }
       finally { setBusy(false); }
     }
 
-    async function runGlobalAction(action, message) {
+    async function runGlobalAction(action, messageKey) {
       setBusy(true);
       try {
         const body = new URLSearchParams({ action });
         await api('/cgi-bin/action', { method: 'POST', headers: { 'Content-Type': 'application/x-www-form-urlencoded;charset=UTF-8' }, body });
-        showToast(message);
+        showToast(t(messageKey));
         setTimeout(() => loadStatus().catch(() => {}), 1400);
-      } catch (error) { showToast(`操作失败：${error.message}`); }
+      } catch (error) { showToast(t('operationFailed', { error: error.message })); }
       finally { setBusy(false); }
     }
 
-    async function loadStatus() {
-      const data = await (await api('/cgi-bin/status')).json();
-      latestStatus = data;
+    function renderStatus(data) {
       const allOnline = data.enabledCount > 0 && data.mountedCount === data.enabledCount;
       const noEnabled = data.enabledCount === 0;
+      renderConnectionText(latestConnection);
       $('globalDot').className = `dot ${noEnabled ? '' : allOnline ? 'good' : data.mountedCount ? 'warn' : 'bad'}`;
-      $('globalStatus').textContent = noEnabled ? '无启用来源' : allOnline ? '全部在线' : `${data.mountedCount}/${data.enabledCount} 在线`;
-      $('mountCount').textContent = `${data.mountedCount} / ${data.enabledCount}`;
-      $('watchdogState').textContent = data.watchdogAlive ? '守护进程正常' : '守护进程异常';
-      $('indexedValue').textContent = `${Number(data.totalFiles).toLocaleString()} 项`;
+      $('globalStatus').textContent = noEnabled ? t('noEnabled') : allOnline ? t('allOnline') : t('onlineCount', { mounted: formatNumber(data.mountedCount), enabled: formatNumber(data.enabledCount) });
+      $('mountCount').textContent = `${formatNumber(data.mountedCount)} / ${formatNumber(data.enabledCount)}`;
+      $('watchdogState').textContent = data.watchdogAlive ? t('watchdogOk') : t('watchdogError');
+      $('indexedValue').textContent = tCount('indexedItems', data.totalFiles);
       $('indexedDetail').textContent = formatBytes(data.totalBytes);
-      $('queueValue').textContent = `${Number(data.totalPending).toLocaleString()} 待登记`;
-      $('queueDetail').textContent = data.scanningCount ? `${data.scanningCount} 个来源扫描中` : '当前无扫描任务';
+      $('queueValue').textContent = tCount('pendingItems', data.totalPending);
+      $('queueDetail').textContent = data.scanningCount ? tCount('sourcesScanning', data.scanningCount) : t('noScan');
       $('freeValue').textContent = formatBytes(data.nasFree);
-      $('capacityUpdated').textContent = data.capacityUpdated ? `${formatRelativeTime(data.capacityUpdated, data.serverTime)}更新` : '尚未更新';
+      $('capacityUpdated').textContent = data.capacityUpdated ? t('capacityUpdated', { time: formatRelativeTime(data.capacityUpdated, data.serverTime) }) : t('neverUpdated');
       $('connectionDot').className = `dot ${allOnline ? 'good' : data.mountedCount ? 'warn' : ''}`;
-      if (data.enabledCount) $('connectionState').textContent = allOnline ? '已连接' : '部分在线';
+      if (data.enabledCount) $('connectionState').textContent = allOnline ? t('connected') : t('partiallyOnline');
 
       data.sources.forEach((state) => {
         const card = document.querySelector(`.source-card[data-source-id="${state.id}"]`);
         if (!card) return;
         const online = state.enabled && state.mounted && state.rcloneAlive;
         card.querySelector('.source-dot').className = `dot source-dot ${online ? 'good' : state.enabled ? 'bad' : ''}`;
-        card.querySelector('.source-status-text').textContent = state.enabled ? (online ? `已挂载 · ${scanLabel(state.scanStatus)}` : '未挂载') : '已停用';
+        card.querySelector('.source-status-text').textContent = state.enabled ? (online ? t('mountedStatus', { scan: scanLabel(state.scanStatus) }) : t('unmounted')) : t('stopped');
         card.querySelector('.summary-last-scan').textContent = formatRelativeTime(state.lastScan, data.serverTime);
         card.querySelector('.summary-last-scan').title = formatTime(state.lastScan);
         card.querySelector('.summary-bytes').textContent = formatBytes(state.currentBytes);
-        card.querySelector('.source-filter-count').textContent = `${state.filterCount} 条忽略规则`;
-        card.querySelector('.source-detail-status').textContent = `文件 ${Number(state.currentFiles).toLocaleString()} · 待登记 ${Number(state.pendingFiles).toLocaleString()}`;
+        card.querySelector('.source-filter-count').textContent = tCount('ignoreRules', state.filterCount);
+        card.querySelector('.source-detail-status').textContent = t('filesPending', { files: formatNumber(state.currentFiles), pending: formatNumber(state.pendingFiles) });
         if (state.errorB64) {
           const error = decodeB64(state.errorB64).trim();
           if (error && shownErrors.get(state.id) !== error) { shownErrors.set(state.id, error); showToast(error); }
@@ -675,8 +788,16 @@
       updateCharts(data);
     }
 
+    async function loadStatus() {
+      latestStatus = await (await api('/cgi-bin/status')).json();
+      renderStatus(latestStatus);
+    }
+
     async function loadLog() {
-      $('logView').textContent = await (await api('/cgi-bin/log')).text() || '暂无日志';
+      const content = await (await api('/cgi-bin/log')).text();
+      logLoaded = true;
+      logEmpty = !content;
+      $('logView').textContent = content || t('noLogs');
       $('logView').scrollTop = $('logView').scrollHeight;
     }
 
@@ -686,27 +807,34 @@
       $('browserModal').classList.remove('hidden');
       await loadFolders(browsePath);
     }
+    const setFolderMessage = (message) => {
+      const empty = document.createElement('div');
+      empty.className = 'empty';
+      empty.textContent = message;
+      $('folderList').replaceChildren(empty);
+    };
     async function loadFolders(path) {
       browsePath = path;
-      $('browserPath').querySelector('span').textContent = path ? `nas:${path}` : 'NAS 根目录';
-      $('folderList').innerHTML = '<div class="empty">正在读取目录</div>';
+      $('browserPath').querySelector('span').textContent = path ? `nas:${path}` : t('nasRoot');
+      setFolderMessage(t('folderLoading'));
       try {
         const items = await (await api(`/cgi-bin/browse?path=${encodeURIComponent(path)}`)).json();
         $('folderList').replaceChildren();
-        if (!items.length) { $('folderList').innerHTML = '<div class="empty">没有子目录</div>'; return; }
-        items.sort((a, b) => a.Name.localeCompare(b.Name, 'zh-CN')).forEach((item) => {
+        if (!items.length) { setFolderMessage(t('noSubfolders')); return; }
+        items.sort((a, b) => a.Name.localeCompare(b.Name, locale())).forEach((item) => {
           const row = document.createElement('div'); row.className = 'folder-row';
           const name = document.createElement('div'); name.className = 'folder-name'; name.innerHTML = '<i data-lucide="folder"></i>';
           const label = document.createElement('span'); label.textContent = item.Name; name.append(label);
-          const enter = document.createElement('button'); enter.className = 'icon-only'; enter.type = 'button'; enter.title = `进入 ${item.Name}`; enter.setAttribute('aria-label', enter.title); enter.innerHTML = '<i data-lucide="chevron-right"></i>';
+          const enter = document.createElement('button'); enter.className = 'icon-only'; enter.type = 'button'; enter.title = t('enterFolder', { name: item.Name }); enter.setAttribute('aria-label', enter.title); enter.innerHTML = '<i data-lucide="chevron-right"></i>';
           enter.addEventListener('click', () => loadFolders(path ? `${path}/${item.Name}` : item.Name));
           row.append(name, enter); $('folderList').append(row);
         });
         renderIcons();
-      } catch (error) { $('folderList').innerHTML = `<div class="empty">读取失败：${error.message}</div>`; }
+      } catch (error) { setFolderMessage(t('folderReadFailed', { error: error.message })); }
     }
     function closeBrowser() { $('browserModal').classList.add('hidden'); browseInput = null; }
 
+    document.querySelectorAll('.language-option').forEach((button) => button.addEventListener('click', () => setLanguage(button.dataset.language)));
     $('saveConnectionBtn').addEventListener('click', saveConnection);
     $('togglePasswordBtn').addEventListener('click', () => {
       const field = $('smbPassword');
@@ -715,18 +843,20 @@
       setPasswordIcon(visible);
     });
     $('addSourceBtn').addEventListener('click', addDraftSource);
-    $('refreshCapacityBtn').addEventListener('click', () => runGlobalAction('capacity', '正在刷新 NAS 容量'));
-    $('remountAllBtn').addEventListener('click', () => runGlobalAction('remountAll', '正在重新挂载全部来源'));
+    $('refreshCapacityBtn').addEventListener('click', () => runGlobalAction('capacity', 'refreshingCapacity'));
+    $('remountAllBtn').addEventListener('click', () => runGlobalAction('remountAll', 'remountingAll'));
     $('closeBrowserBtn').addEventListener('click', closeBrowser);
     $('upBrowserBtn').addEventListener('click', () => { const parts = browsePath.split('/').filter(Boolean); parts.pop(); loadFolders(parts.join('/')); });
     $('chooseBrowserBtn').addEventListener('click', () => {
-      if (!browseInput || !browsePath) return showToast('请选择共享目录或其子目录');
+      if (!browseInput || !browsePath) return showToast(t('chooseFolderFirst'));
       browseInput.value = browsePath;
+      refreshSourceCards();
       closeBrowser();
     });
     $('logPanel').addEventListener('toggle', () => { if ($('logPanel').open) loadLog().catch(() => {}); });
 
     async function boot() {
+      setLanguage(language, false);
       if (!token) { $('auth').classList.remove('hidden'); return; }
       $('app').classList.remove('hidden');
       renderIcons();
