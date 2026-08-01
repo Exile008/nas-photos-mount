@@ -1,5 +1,11 @@
 # Changelog
 
+## 3.3.0 - 2026-08-02
+
+- Replace the temporary unmount action with a persistent per-source pause/resume mount control.
+- Add an optional per-source Live Photo filter that hides a MOV only when a same-folder, same-name HEIC exists.
+- Show indexed item counts and sizes without exposing the internal MediaStore registration queue in the management panel.
+
 ## 3.2.0 - 2026-08-01
 
 - Add an in-panel Chinese/English switch with persistent language selection.

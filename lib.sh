@@ -100,7 +100,9 @@ migrate_v2_source() {
   write_default "$source_dir/remote_path" "$remote_path"
   write_default "$source_dir/album_name" "$album_name"
   write_default "$source_dir/enabled" '1'
+  write_default "$source_dir/paused" '0'
   write_default "$source_dir/auto_scan" "$auto_scan"
+  write_default "$source_dir/ignore_live_photo" '0'
   write_default "$source_dir/scan_interval_minutes" "$interval"
   write_default "$source_dir/scan_batch_size" "$batch_size"
 
@@ -136,6 +138,8 @@ ensure_data() {
     source_dir="$SOURCES_DIR/$source_id"
     source_state="$source_dir/state"
     mkdir -p "$source_state"
+    write_default "$source_dir/paused" '0'
+    write_default "$source_dir/ignore_live_photo" '0'
     [ -e "$source_state/seen.tsv" ] || : > "$source_state/seen.tsv"
     secure_source_permissions "$source_dir"
   done

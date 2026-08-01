@@ -27,6 +27,8 @@ migrate_v2_source
 
 [ "$(sed -n '1p' "$SOURCES_DIR/source-1/remote_path")" = 'photo/archive' ]
 [ "$(sed -n '1p' "$SOURCES_DIR/source-1/album_name")" = 'NAS-Archive' ]
+[ "$(sed -n '1p' "$SOURCES_DIR/source-1/paused")" = '0' ]
+[ "$(sed -n '1p' "$SOURCES_DIR/source-1/ignore_live_photo")" = '0' ]
 [ -e "$SOURCES_DIR/source-1/state/seen.tsv" ]
 
 printf 'legacy migration test passed\n'

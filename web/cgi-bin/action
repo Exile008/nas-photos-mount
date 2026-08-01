@@ -26,11 +26,20 @@ case "$action" in
   capacity)
     "$BUSYBOX" setsid "$MODDIR/refresh-capacity.sh" </dev/null >> "$LOG" 2>&1 &
     ;;
-  remount|unmount|scan)
+  remount|pauseMount|resumeMount|scan)
     source_exists "$source_id" || fail_json '404 Not Found' 'source_not_found'
     case "$action" in
       remount) "$BUSYBOX" setsid nsenter -t 1 -m -- "$MODDIR/remount.sh" "$source_id" </dev/null >> "$LOG" 2>&1 & ;;
-      unmount) "$BUSYBOX" setsid nsenter -t 1 -m -- "$MODDIR/unmount.sh" "$source_id" </dev/null >> "$LOG" 2>&1 & ;;
+      pauseMount)
+        printf '%s\n' '1' > "$SOURCES_DIR/$source_id/paused"
+        secure_source_permissions "$SOURCES_DIR/$source_id"
+        "$BUSYBOX" setsid nsenter -t 1 -m -- "$MODDIR/unmount.sh" "$source_id" </dev/null >> "$LOG" 2>&1 &
+        ;;
+      resumeMount)
+        printf '%s\n' '0' > "$SOURCES_DIR/$source_id/paused"
+        secure_source_permissions "$SOURCES_DIR/$source_id"
+        "$BUSYBOX" setsid nsenter -t 1 -m -- "$MODDIR/mount-once.sh" "$source_id" </dev/null >> "$LOG" 2>&1 &
+        ;;
       scan) "$BUSYBOX" setsid "$MODDIR/scan-new.sh" "$source_id" </dev/null >> "$LOG" 2>&1 & ;;
     esac
     ;;

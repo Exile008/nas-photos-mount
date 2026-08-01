@@ -16,9 +16,10 @@ Mount multiple SMB folders from Synology or another NAS read-only into Android `
 - Multiple SMB sources with independent remote folders, local album names, scan intervals, and batch sizes.
 - SMB authentication, remote folder browsing, connection tests, and a local management panel.
 - Per-source Syncthing `.stignore`-style ignore rules for gradually scanning multi-terabyte libraries.
+- Per-source pause/resume controls and an optional Live Photo filter that hides a paired `.MOV` while keeping the still image visible.
 - A separate `seen.tsv` for each source, so unchanged files are not resubmitted to Android MediaScanner after an app or phone restart.
 - Read-only rclone FUSE mounts that do not cache the complete NAS library on the phone.
-- Monitoring for NAS capacity, indexed size by source, mount processes, scan queues, and logs.
+- Monitoring for NAS capacity, indexed item counts and sizes, mount processes, and logs.
 - Instant Chinese/English switching in the top-right corner of the management panel, with the preference stored locally.
 - A management service bound only to `127.0.0.1:8686`, with a random token required by every API request.
 
@@ -53,7 +54,7 @@ Google controls the Google Photos storage policy. This module does not modify Go
 3. Restart the phone after installation.
 4. Tap the action button for `NAS Photos Mount` in the Magisk module list to open the management panel.
 5. Expand SMB connection, enter the address, port, username, password, and optional domain, then tap Test and save.
-6. Tap Add folder, browse to a NAS folder, and configure the phone album name, scan interval, batch size, and ignore rules.
+6. Tap Add folder, browse to a NAS folder, and configure the phone album name, scan interval, Live Photo filtering, and ignore rules.
 7. Enable backup for the corresponding local album folder in Google Photos.
 
 See [CONFIG_EN.md](CONFIG_EN.md) for detailed fields and ignore-rule syntax. The Chinese version is available in [CONFIG.md](CONFIG.md).
@@ -72,6 +73,7 @@ Mounting a 2 TB folder does not write 2 TB to the phone. File contents travel ov
 - Use a registration batch size between `100` and `500` initially.
 - Watch Google Photos, network usage, device temperature, and logs before gradually expanding the range.
 - Put recycle bins, system folders, and sidecar files that are not needed into the ignore rules.
+- The first time Live Photo filtering is enabled, the module must traverse visible file names to identify HEIC/MOV pairs. This can take a long time for a 2 TB folder. The pair list is cached and is refreshed only when later scans find changes.
 
 ## Deduplication Boundary
 
@@ -119,8 +121,8 @@ Keep these files in sync when publishing a version:
 Use a feature branch and pull request where practical. After merging into `main`, create a version tag such as:
 
 ```bash
-git tag -a v3.2.0 -m "NAS Photos Mount v3.2.0"
-git push origin v3.2.0
+git tag -a v3.3.0 -m "NAS Photos Mount v3.3.0"
+git push origin v3.3.0
 ```
 
 ## License

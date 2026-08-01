@@ -26,17 +26,22 @@ Tap Add folder to create a source, then use Browse to choose a remote SMB folder
 - `Local album folder`: maps to `/storage/emulated/0/DCIM/<name>`. Two sources cannot use the same name.
 - `Enable source`: disabling a source preserves its configuration and dedupe history but unmounts it.
 - `Automatic scan`: searches for new or changed files on that source's own schedule.
+- `Ignore Live Photos; upload still images only`: when a same-folder `.HEIC` and `.MOV` share the same name, only the paired `.MOV` is hidden. Standalone videos remain visible.
 - `Scan interval`: 1 to 10080 minutes. The watchdog checks due scans once per minute.
 - `Registration batch size`: 1 to 5000. Start between 100 and 500 for a large library, observe Google Photos, and increase it gradually.
 - `Ignore rules`: apply only to the current source.
 
 Up to 32 sources can be saved. Each source is mounted at `/mnt/nas-photos/<source-id>` and then bind-mounted read-only into its assigned `DCIM` album folder. Removing a source unmounts it first, then archives its configuration and dedupe state in `/data/adb/nas_photos_mount/deleted-sources/`.
 
+Pause mount on a source card persists the paused state and unmounts that source, so the watchdog does not mount it again. The button then changes to Resume mount. Resuming keeps the existing configuration and scan history.
+
 ## Large Folders and 2 TB Libraries
 
 Mounting does not download the complete NAS folder to the phone. File content travels over SMB only when Google Photos or another media service reads it. The initial scan still traverses directory metadata and may take a long time when a source contains many files.
 
-Start with ignore rules that limit the scan to a small range, then expand it gradually. The status panel shows file count, indexed size, pending registrations, scan status, and last scan time for each source, as well as NAS capacity and mount process health.
+Start with ignore rules that limit the scan to a small range, then expand it gradually. The status panel shows only indexed item counts and sizes, scan status, and last scan time for each source, as well as NAS capacity and mount process health. Google Photos remains responsible for backup decisions and cloud-side deduplication.
+
+The first time Live Photo filtering is enabled, the module must traverse visible file names on that source to identify pairs, which can delay the first mount for a 2 TB folder. The pair list is cached in the source state directory. Later scans update the filter and remount the source only when pairs change. Disabling the option makes those `.MOV` files visible again. This feature does not delete videos already uploaded to Google Photos.
 
 ## Ignore Rules
 

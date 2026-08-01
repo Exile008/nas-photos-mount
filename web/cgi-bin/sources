@@ -13,15 +13,19 @@ if [ "$REQUEST_METHOD" = 'GET' ]; then
     remote_path=$(read_source_setting "$source_id" remote_path '')
     album_name=$(read_source_setting "$source_id" album_name '')
     enabled=$(read_source_setting "$source_id" enabled '1')
+    paused=$(read_source_setting "$source_id" paused '0')
     auto_scan=$(read_source_setting "$source_id" auto_scan '1')
+    ignore_live_photo=$(read_source_setting "$source_id" ignore_live_photo '0')
     interval=$(read_source_setting "$source_id" scan_interval_minutes '360')
     batch_size=$(read_source_setting "$source_id" scan_batch_size '500')
     ignore_b64=$("$BUSYBOX" base64 "$source_dir/ignore.syncthing" | tr -d '\r\n')
     [ "$first" = true ] || printf ','
     first=false
     printf '{"id":"%s","remotePath":"%s","albumName":"%s",' "$source_id" "$remote_path" "$album_name"
-    printf '"enabled":%s,"autoScan":%s,"scanIntervalMinutes":%s,"scanBatchSize":%s,"ignoreB64":"%s"}' \
-      "$enabled" "$auto_scan" "$interval" "$batch_size" "$ignore_b64"
+    printf '"enabled":%s,"paused":%s,"autoScan":%s,"ignoreLivePhoto":%s,' \
+      "$enabled" "$paused" "$auto_scan" "$ignore_live_photo"
+    printf '"scanIntervalMinutes":%s,"scanBatchSize":%s,"ignoreB64":"%s"}' \
+      "$interval" "$batch_size" "$ignore_b64"
   done
   printf ']}\n'
   exit 0
@@ -35,6 +39,7 @@ remote_path=''
 album_name=''
 enabled='1'
 auto_scan='1'
+ignore_live_photo='0'
 interval='360'
 batch_size='500'
 ignore_rules=''
@@ -54,6 +59,7 @@ for pair in "$@"; do
     albumName) album_name=$value ;;
     enabled) enabled=$value ;;
     autoScan) auto_scan=$value ;;
+    ignoreLivePhoto) ignore_live_photo=$value ;;
     scanIntervalMinutes) interval=$value ;;
     scanBatchSize) batch_size=$value ;;
     ignoreRules) ignore_rules=$value ;;
@@ -76,6 +82,7 @@ valid_remote_path "$remote_path" || fail_json '400 Bad Request' 'invalid_remote_
 valid_album_name "$album_name" || fail_json '400 Bad Request' 'invalid_album_name'
 [ "$enabled" = 0 ] || [ "$enabled" = 1 ] || fail_json '400 Bad Request' 'invalid_enabled'
 [ "$auto_scan" = 0 ] || [ "$auto_scan" = 1 ] || fail_json '400 Bad Request' 'invalid_auto_scan'
+[ "$ignore_live_photo" = 0 ] || [ "$ignore_live_photo" = 1 ] || fail_json '400 Bad Request' 'invalid_live_photo_setting'
 is_uint "$interval" || fail_json '400 Bad Request' 'invalid_interval'
 is_uint "$batch_size" || fail_json '400 Bad Request' 'invalid_batch_size'
 [ "$interval" -ge 1 ] && [ "$interval" -le 10080 ] || fail_json '400 Bad Request' 'invalid_interval'
@@ -104,11 +111,13 @@ fi
 
 if [ -n "$source_id" ]; then
   source_exists "$source_id" || fail_json '404 Not Found' 'source_not_found'
+  paused=$(read_source_setting "$source_id" paused '0')
 else
   source_count=$(source_ids | "$BUSYBOX" wc -l | tr -d ' ')
   [ "$source_count" -lt 32 ] || fail_json '409 Conflict' 'source_limit_reached'
   random_part=$("$BUSYBOX" od -An -N4 -tx1 /dev/urandom | tr -d ' \r\n')
   source_id="source-$(date +%s)-$random_part"
+  paused='0'
 fi
 
 source_dir="$SOURCES_DIR/$source_id"
@@ -117,7 +126,9 @@ mkdir -p "$source_dir" "$source_state"
 printf '%s\n' "$remote_path" > "$source_dir/remote_path"
 printf '%s\n' "$album_name" > "$source_dir/album_name"
 printf '%s\n' "$enabled" > "$source_dir/enabled"
+printf '%s\n' "$paused" > "$source_dir/paused"
 printf '%s\n' "$auto_scan" > "$source_dir/auto_scan"
+printf '%s\n' "$ignore_live_photo" > "$source_dir/ignore_live_photo"
 printf '%s\n' "$interval" > "$source_dir/scan_interval_minutes"
 printf '%s\n' "$batch_size" > "$source_dir/scan_batch_size"
 mv "$request_dir/ignore.syncthing" "$source_dir/ignore.syncthing"
@@ -130,7 +141,7 @@ fi
 [ -e "$source_state/seen.tsv" ] || : > "$source_state/seen.tsv"
 secure_source_permissions "$source_dir"
 
-log_message "[$source_id] source saved remote=$remote_path album=$album_name enabled=$enabled"
+log_message "[$source_id] source saved remote=$remote_path album=$album_name enabled=$enabled ignore_live_photo=$ignore_live_photo"
 "$BUSYBOX" setsid nsenter -t 1 -m -- "$MODDIR/remount.sh" "$source_id" </dev/null >> "$LOG" 2>&1 &
 send_json_header
 printf '{"ok":true,"sourceId":"%s","remountStarted":true}\n' "$source_id"

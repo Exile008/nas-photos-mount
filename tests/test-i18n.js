@@ -36,7 +36,7 @@ for (const match of scriptMatch[1].matchAll(/\btCount\('([^']+)'/g)) {
   'showPassword', 'hidePassword',
   'apiSmbLoginFailed', 'apiInvalidRemotePath', 'apiInvalidAlbumName', 'apiDuplicateAlbumName',
   'apiRemoteFilterFailed', 'apiBrowseFailed', 'apiSourceLimit',
-  'scanStarted', 'remountingSource', 'unmountingSource', 'refreshingCapacity', 'remountingAll',
+  'scanStarted', 'remountingSource', 'pausingMount', 'resumingMount', 'refreshingCapacity', 'remountingAll',
 ].forEach((key) => referencedKeys.add(key));
 
 const missingKeys = [...referencedKeys].filter((key) => !(key in messages.zh));

@@ -16,9 +16,10 @@
 - 多个 SMB 来源，每个来源独立设置远程目录、本地相册名、扫描周期和批量大小。
 - SMB 远程登录、目录浏览、连接测试与本地管理面板。
 - Syncthing `.stignore` 风格的逐来源忽略规则，适合数 TB 大目录逐步放开扫描范围。
+- 每个来源可独立暂停/恢复挂载，并可忽略 Live Photo 配对中的 `.MOV`，只向相册呈现静态图。
 - 每个来源独立保存 `seen.tsv`，重启后不会重复向 Android 媒体库提交未变化文件。
 - rclone 只读 FUSE 挂载，不把整个 NAS 目录缓存到手机。
-- NAS 容量、来源索引大小、挂载进程、扫描队列和日志监控。
+- NAS 容量、来源索引数量与大小、挂载进程和日志监控。
 - 管理面板右上角可即时切换简体中文和英文，并记住本机选择。
 - 管理服务只监听 `127.0.0.1:8686`，接口使用随机令牌。
 
@@ -53,7 +54,7 @@ Google Photos 的免费存储政策由 Google 决定，本模块不修改 Google
 3. 安装完成后重启手机。
 4. 在 Magisk 模块列表中点击 `NAS Photos Mount` 的操作按钮，打开管理面板。
 5. 展开“SMB 连接”，填写地址、端口、账号、密码和可选域，点击“测试并保存”。
-6. 点击“添加目录”，浏览并选择 NAS 目录，设置手机相册名、扫描周期、批量大小和忽略规则。
+6. 点击“添加目录”，浏览并选择 NAS 目录，设置手机相册名、扫描周期、Live Photo 过滤和忽略规则。
 7. 在 Google Photos 中为对应的本地相册目录启用备份。
 
 详细字段和忽略语法见 [CONFIG.md](CONFIG.md)，英文版见 [CONFIG_EN.md](CONFIG_EN.md)。
@@ -72,6 +73,7 @@ Google Photos 的免费存储政策由 Google 决定，本模块不修改 Google
 - 每批登记数先使用 `100` 到 `500`。
 - 观察 Google Photos、网络、温度与日志后再逐步扩大范围。
 - 不需要的回收站、系统目录、旁车文件应放入忽略规则。
+- 首次开启 Live Photo 过滤需要遍历当前可见文件名来识别 HEIC/MOV 配对；2 TB 目录可能需要较长时间。配对清单会被缓存，后续正常扫描发现变化时才更新并重新挂载。
 
 ## 去重边界
 
@@ -119,8 +121,8 @@ RCLONE_BIN=/absolute/path/to/rclone ./build.sh
 建议使用功能分支和 Pull Request；合并到 `main` 后创建版本标签，例如：
 
 ```bash
-git tag -a v3.2.0 -m "NAS Photos Mount v3.2.0"
-git push origin v3.2.0
+git tag -a v3.3.0 -m "NAS Photos Mount v3.3.0"
+git push origin v3.3.0
 ```
 
 ## 许可证

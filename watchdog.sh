@@ -26,7 +26,8 @@ while true; do
 
   for source_id in $(source_ids); do
     enabled=$(read_source_setting "$source_id" enabled '1')
-    if [ "$enabled" != 1 ]; then
+    paused=$(read_source_setting "$source_id" paused '0')
+    if [ "$enabled" != 1 ] || [ "$paused" = 1 ]; then
       continue
     fi
 

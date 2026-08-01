@@ -28,6 +28,7 @@ BATCH_SIZE=$(read_source_setting "$SOURCE_ID" scan_batch_size '500')
 FILTER_FILE="$SOURCE_STATE/exclude.rclone"
 CASE_MARKER="$SOURCE_STATE/ignore-case"
 CURRENT_RAW="$SOURCE_STATE/current.raw.$$"
+CURRENT_ALL="$SOURCE_STATE/current.all.$$"
 CURRENT_NEW="$SOURCE_STATE/current.tsv.new.$$"
 PENDING_NEW="$SOURCE_STATE/pending.tsv.new.$$"
 BATCH_NEW="$SOURCE_STATE/batch.tsv.new.$$"
@@ -35,7 +36,7 @@ SUBMITTED_NEW="$SOURCE_STATE/submitted.tsv.new.$$"
 SEEN_NEW="$SOURCE_STATE/seen.tsv.new.$$"
 
 cleanup() {
-  rm -f "$CURRENT_RAW" "$CURRENT_NEW" "$PENDING_NEW" "$BATCH_NEW" "$SUBMITTED_NEW" "$SEEN_NEW"
+  rm -f "$CURRENT_RAW" "$CURRENT_ALL" "$CURRENT_NEW" "$PENDING_NEW" "$BATCH_NEW" "$SUBMITTED_NEW" "$SEEN_NEW"
   rm -f "$LOCK_DIR/pid"
   rmdir "$LOCK_DIR" 2>/dev/null || true
 }
@@ -73,7 +74,28 @@ if ! "$RCLONE" lsf "nas:$REMOTE_PATH" \
 fi
 
 "$BUSYBOX" awk -v prefix="$REMOTE_PATH;$ALBUM_NAME;" '{ print prefix $0 }' "$CURRENT_RAW" \
-  | LC_ALL=C "$BUSYBOX" sort -u > "$CURRENT_NEW"
+  | LC_ALL=C "$BUSYBOX" sort -u > "$CURRENT_ALL"
+
+IGNORE_LIVE_PHOTO=$(read_source_setting "$SOURCE_ID" ignore_live_photo '0')
+LIVE_FILTER_CHANGED=false
+if [ "$IGNORE_LIVE_PHOTO" = 1 ]; then
+  live_filter_result=$("$MODDIR/refresh-live-photo-filter.sh" "$SOURCE_ID" "$CURRENT_RAW" raw) || {
+    printf '%s\n' 'error' > "$SOURCE_STATE/scan.status"
+    printf '%s\n' 'Live Photo filter failed; see module log' > "$SOURCE_STATE/scan.error"
+    exit 1
+  }
+  [ "$live_filter_result" = changed ] && LIVE_FILTER_CHANGED=true
+  "$BUSYBOX" awk -F';' '
+    NR == FNR { hidden[$0] = 1; next }
+    {
+      path = $0
+      sub(/^[^;]*;[^;]*;[^;]*;[^;]*;/, "", path)
+      if (!hidden[path]) print $0
+    }
+  ' "$SOURCE_STATE/live-photo-paths.txt" "$CURRENT_ALL" > "$CURRENT_NEW"
+else
+  mv "$CURRENT_ALL" "$CURRENT_NEW"
+fi
 LC_ALL=C "$BUSYBOX" sort -u "$SOURCE_STATE/seen.tsv" -o "$SOURCE_STATE/seen.tsv"
 LC_ALL=C "$BUSYBOX" comm -23 "$CURRENT_NEW" "$SOURCE_STATE/seen.tsv" > "$PENDING_NEW"
 "$BUSYBOX" head -n "$BATCH_SIZE" "$PENDING_NEW" > "$BATCH_NEW"
@@ -113,3 +135,6 @@ date +%s > "$SOURCE_STATE/last_scan.epoch"
 printf '%s\n' 'idle' > "$SOURCE_STATE/scan.status"
 secure_source_permissions "$SOURCE_DIR"
 log_message "[$SOURCE_ID] inventory files=$file_count bytes=$total_bytes submitted=$submitted pending=$pending_after"
+if [ "$LIVE_FILTER_CHANGED" = true ]; then
+  "$BUSYBOX" setsid nsenter -t 1 -m -- "$MODDIR/remount.sh" "$SOURCE_ID" </dev/null >> "$LOG" 2>&1 &
+fi

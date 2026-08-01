@@ -83,7 +83,7 @@
     .section-icon { width: 30px; height: 30px; display: grid; place-items: center; border: 1px solid var(--line); border-radius: 7px; background: var(--surface); color: var(--accent); }
     .toolbar { display: flex; flex-wrap: wrap; gap: 8px; }
 
-    .stats { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); border: 1px solid var(--line); border-radius: var(--radius); background: var(--surface); overflow: hidden; }
+    .stats { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); border: 1px solid var(--line); border-radius: var(--radius); background: var(--surface); overflow: hidden; }
     .stat { min-height: 82px; padding: 13px 15px; border-right: 1px solid var(--line); }
     .stat:last-child { border-right: 0; }
     .stat-label { color: var(--muted); font-size: 11px; font-weight: 650; margin-bottom: 8px; }
@@ -174,9 +174,6 @@
       .source-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
     }
     @media (max-width: 760px) {
-      .stats { grid-template-columns: repeat(2, minmax(0, 1fr)); }
-      .stat:nth-child(2) { border-right: 0; }
-      .stat:nth-child(-n+2) { border-bottom: 1px solid var(--line); }
       .visual-grid { grid-template-columns: 1fr; }
       .source-summary { grid-template-columns: minmax(0, 1fr); gap: 13px; }
       .source-facts, .source-summary-end { grid-column: 1; grid-row: auto; }
@@ -186,6 +183,9 @@
     }
     @media (max-width: 620px) {
       .header-inner, main { padding-left: 14px; padding-right: 14px; }
+      .stats { grid-template-columns: 1fr; }
+      .stat { border-right: 0; border-bottom: 1px solid var(--line); }
+      .stat:last-child { border-bottom: 0; }
       .header-inner { align-items: flex-start; flex-wrap: wrap; }
       .header-actions { width: 100%; justify-content: space-between; }
       .brand-mark { display: none; }
@@ -260,7 +260,6 @@
         <div class="stats">
           <div class="stat"><div class="stat-label" data-i18n="mountSources">来源挂载</div><div class="stat-value" id="mountCount">--</div><div class="stat-detail" id="watchdogState">--</div></div>
           <div class="stat"><div class="stat-label" data-i18n="indexedContent">已索引内容</div><div class="stat-value" id="indexedValue">--</div><div class="stat-detail" id="indexedDetail">--</div></div>
-          <div class="stat"><div class="stat-label" data-i18n="mediaQueue">媒体登记队列</div><div class="stat-value" id="queueValue">--</div><div class="stat-detail" id="queueDetail">--</div></div>
           <div class="stat"><div class="stat-label" data-i18n="nasFreeSpace">NAS 可用空间</div><div class="stat-value" id="freeValue">--</div><div class="stat-detail" id="capacityUpdated">--</div></div>
         </div>
         <div class="visual-grid">
@@ -345,7 +344,7 @@
           <div class="source-actions">
             <button class="scan-source" type="button" title="扫描新增" data-i18n-title="scanNewTitle"><i data-lucide="scan-search"></i><span data-i18n="scanNew">扫描新增</span></button>
             <button class="remount-source" type="button" title="重新挂载" data-i18n-title="remountTitle"><i data-lucide="rotate-ccw"></i><span data-i18n="remount">重新挂载</span></button>
-            <button class="unmount-source" type="button" title="卸载" data-i18n-title="unmountTitle"><i data-lucide="unlink"></i><span data-i18n="unmount">卸载</span></button>
+            <button class="pause-source" type="button" title="暂停挂载" data-i18n-title="pauseMountTitle"><i data-lucide="pause"></i><span data-i18n="pauseMount">暂停挂载</span></button>
             <button class="delete-source danger" type="button" title="移除来源" data-i18n-title="removeTitle"><i data-lucide="trash-2"></i><span data-i18n="remove">移除</span></button>
           </div>
           <i class="chevron" data-lucide="chevron-down"></i>
@@ -361,8 +360,9 @@
         <div class="source-options">
           <label><input class="source-enabled" type="checkbox"><span data-i18n="enableSource">启用来源</span></label>
           <label><input class="source-auto-scan" type="checkbox"><span data-i18n="autoScan">自动扫描</span></label>
+          <label><input class="source-ignore-live-photo" type="checkbox"><span data-i18n="ignoreLivePhoto">忽略 Live Photo，只上传静态图</span></label>
           <span class="source-filter-count">0 条忽略规则</span>
-          <span class="source-detail-status">文件 -- · 待登记 --</span>
+          <span class="source-detail-status">已索引 -- 项</span>
         </div>
         <div class="rules-head"><span class="field-label" data-i18n="ignoreRulesLabel">忽略规则</span><span class="field-note">Syncthing .stignore</span></div>
         <textarea class="source-ignore" spellcheck="false" aria-label="来源忽略规则" data-i18n-aria="ignoreRulesAria"></textarea>
@@ -392,34 +392,34 @@
       zh: {
         languageSwitch: '语言', authTitle: '管理面板不可用', authHint: '请从 Magisk 模块操作入口重新打开。',
         statusReading: '正在读取状态', statusChecking: '检查中', overviewTitle: '运行概览', refreshCapacity: '刷新容量', refreshCapacityTitle: '刷新 NAS 容量', remountAll: '重新挂载', remountAllTitle: '重新挂载全部来源',
-        mountSources: '来源挂载', indexedContent: '已索引内容', mediaQueue: '媒体登记队列', nasFreeSpace: 'NAS 可用空间', nasSpace: 'NAS 空间', capacityAria: 'NAS 已使用和可用空间', sourceDistribution: '来源索引分布', sourceDistributionAria: '各来源已索引大小',
+        mountSources: '来源挂载', indexedContent: '已索引内容', nasFreeSpace: 'NAS 可用空间', nasSpace: 'NAS 空间', capacityAria: 'NAS 已使用和可用空间', sourceDistribution: '来源索引分布', sourceDistributionAria: '各来源已索引大小',
         connectionTitle: 'SMB 连接', host: '远程地址', port: '端口', username: '账号', password: '密码', showPassword: '显示密码', hidePassword: '隐藏密码', domainOptional: '域（可选）', testAndSave: '测试并保存',
         passwordNotSaved: '尚未保存密码', passwordSavedNote: '密码已保存，接口不会回显', passwordKeepPlaceholder: '留空以保留已保存密码', passwordInputPlaceholder: '输入 SMB 密码', smbNotConfigured: '尚未配置 SMB', remoteNotConfigured: '尚未配置远程地址', configured: '已配置', notConfigured: '未配置', connected: '已连接', partiallyOnline: '部分在线',
-        sourcesTitle: '挂载来源', addFolder: '添加目录', credentials0600: '凭据 0600', readOnly: '只读挂载', dedupeIndex: '独立去重索引', logTitle: '运行日志', last80Lines: '最近 80 行', logExpandHint: '展开后读取日志', noLogs: '暂无日志',
-        newSource: '新来源', noRemotePath: '尚未选择远程目录', unmounted: '未挂载', stopped: '已停用', mounted: '已挂载', lastScan: '上次扫描', indexedSize: '已索引大小', scanNew: '扫描新增', scanNewTitle: '扫描新增', remount: '重新挂载', remountTitle: '重新挂载', unmount: '卸载', unmountTitle: '卸载', remove: '移除', removeTitle: '移除来源', cancel: '取消', cancelTitle: '取消新增',
-        nasFolder: 'NAS 目录', browseSmb: '浏览 SMB 目录', remotePlaceholder: 'photo/目录', albumFolder: '本地相册目录名', scanInterval: '扫描间隔（分钟）', batchSize: '每批登记数', enableSource: '启用来源', autoScan: '自动扫描', ignoreRulesLabel: '忽略规则', ignoreRulesAria: '来源忽略规则', saveSource: '保存来源',
+        sourcesTitle: '挂载来源', addFolder: '添加目录', credentials0600: '凭据 0600', readOnly: '只读挂载', dedupeIndex: '本地索引记录', logTitle: '运行日志', last80Lines: '最近 80 行', logExpandHint: '展开后读取日志', noLogs: '暂无日志',
+        newSource: '新来源', noRemotePath: '尚未选择远程目录', unmounted: '未挂载', paused: '已暂停挂载', stopped: '已停用', mounted: '已挂载', lastScan: '上次扫描', indexedSize: '已索引大小', scanNew: '扫描新增', scanNewTitle: '扫描新增', remount: '重新挂载', remountTitle: '重新挂载', pauseMount: '暂停挂载', pauseMountTitle: '暂停该来源挂载', resumeMount: '恢复挂载', resumeMountTitle: '恢复该来源挂载', remove: '移除', removeTitle: '移除来源', cancel: '取消', cancelTitle: '取消新增',
+        nasFolder: 'NAS 目录', browseSmb: '浏览 SMB 目录', remotePlaceholder: 'photo/目录', albumFolder: '本地相册目录名', scanInterval: '扫描间隔（分钟）', batchSize: '每批登记数', enableSource: '启用来源', autoScan: '自动扫描', ignoreLivePhoto: '忽略 Live Photo，只上传静态图', ignoreRulesLabel: '忽略规则', ignoreRulesAria: '来源忽略规则', saveSource: '保存来源',
         browserAria: '浏览 SMB 目录', nasRoot: 'NAS 根目录', close: '关闭', upOne: '上一级', chooseFolder: '选择此目录', folderLoading: '正在读取目录', noSubfolders: '没有子目录', enterFolder: '进入 {name}', folderReadFailed: '读取失败：{error}', chooseFolderFirst: '请选择共享目录或其子目录',
         apiSmbLoginFailed: 'SMB 登录失败', apiInvalidRemotePath: '远程目录格式无效', apiInvalidAlbumName: '本地相册名称无效', apiDuplicateAlbumName: '本地相册名称已被使用', apiRemoteFilterFailed: '远程目录或忽略规则验证失败', apiBrowseFailed: '目录读取失败', apiSourceLimit: '来源数量已达到上限',
         notScanned: '尚未扫描', justNow: '刚刚', 'minuteAgo.one': '{count} 分钟前', 'minuteAgo.other': '{count} 分钟前', 'hourAgo.one': '{count} 小时前', 'hourAgo.other': '{count} 小时前', 'dayAgo.one': '{count} 天前', 'dayAgo.other': '{count} 天前',
-        scanIdle: '空闲', scanScanning: '扫描中', scanError: '扫描异常', scanNotStarted: '未扫描', used: '已使用', available: '可用', capacityChartDescription: 'NAS 空间：已使用 {used}，可用 {free}。', 'sourceChartDescription.one': '{count} 个来源，已索引 {size}。', 'sourceChartDescription.other': '{count} 个来源，已索引 {size}。', 'sourcesMeta.one': '{count} 个来源 · {size}', 'sourcesMeta.other': '{count} 个来源 · {size}', noSources: '暂无来源', indexedTooltip: '已索引 {size}', pendingTooltip: '待登记 {count}',
-        'ignoreRules.one': '{count} 条忽略规则', 'ignoreRules.other': '{count} 条忽略规则', filesPending: '文件 {files} · 待登记 {pending}', saveDraftFirst: '请先保存当前新来源', connectionSuccess: 'SMB 验证成功，正在重新挂载', connectionFailed: '连接失败：{error}', sourceSaved: '来源已保存，正在应用挂载条件', saveFailed: '保存失败：{error}', removeConfirm: '移除来源“{album}”？去重状态会被归档保留。', sourceArchived: '来源已卸载并归档', removeFailed: '移除失败：{error}', saveSourceFirst: '请先保存来源', operationFailed: '操作失败：{error}',
-        refreshingCapacity: '正在刷新 NAS 容量', remountingAll: '正在重新挂载全部来源', scanStarted: '增量扫描已开始', remountingSource: '正在重新挂载来源', unmountingSource: '正在卸载来源', noEnabled: '无启用来源', allOnline: '全部在线', onlineCount: '{mounted}/{enabled} 在线', watchdogOk: '守护进程正常', watchdogError: '守护进程异常', 'indexedItems.one': '{count} 项', 'indexedItems.other': '{count} 项', 'pendingItems.one': '{count} 待登记', 'pendingItems.other': '{count} 待登记', 'sourcesScanning.one': '{count} 个来源扫描中', 'sourcesScanning.other': '{count} 个来源扫描中', noScan: '当前无扫描任务', capacityUpdated: '{time}更新', neverUpdated: '尚未更新', mountedStatus: '已挂载 · {scan}',
+        scanIdle: '空闲', scanScanning: '扫描中', scanError: '扫描异常', scanNotStarted: '未扫描', used: '已使用', available: '可用', capacityChartDescription: 'NAS 空间：已使用 {used}，可用 {free}。', 'sourceChartDescription.one': '{count} 个来源，已索引 {size}。', 'sourceChartDescription.other': '{count} 个来源，已索引 {size}。', 'sourcesMeta.one': '{count} 个来源 · {size}', 'sourcesMeta.other': '{count} 个来源 · {size}', noSources: '暂无来源', indexedTooltip: '已索引 {size}',
+        'ignoreRules.one': '{count} 条忽略规则', 'ignoreRules.other': '{count} 条忽略规则', filesIndexed: '已索引 {files} 项', saveDraftFirst: '请先保存当前新来源', connectionSuccess: 'SMB 验证成功，正在重新挂载', connectionFailed: '连接失败：{error}', sourceSaved: '来源已保存，正在应用挂载条件', saveFailed: '保存失败：{error}', removeConfirm: '移除来源“{album}”？去重状态会被归档保留。', sourceArchived: '来源已卸载并归档', removeFailed: '移除失败：{error}', saveSourceFirst: '请先保存来源', operationFailed: '操作失败：{error}',
+        refreshingCapacity: '正在刷新 NAS 容量', remountingAll: '正在重新挂载全部来源', scanStarted: '增量扫描已开始', remountingSource: '正在重新挂载来源', pausingMount: '正在暂停来源挂载', resumingMount: '正在恢复来源挂载', noEnabled: '无启用来源', allPaused: '所有来源均已暂停', allOnline: '全部在线', onlineCount: '{mounted}/{enabled} 在线', watchdogOk: '守护进程正常', watchdogError: '守护进程异常', 'indexedItems.one': '{count} 项', 'indexedItems.other': '{count} 项', capacityUpdated: '{time}更新', neverUpdated: '尚未更新', mountedStatus: '已挂载 · {scan}',
       },
       en: {
         languageSwitch: 'Language', authTitle: 'Management panel unavailable', authHint: 'Open it again from the Magisk module action.',
         statusReading: 'Loading status', statusChecking: 'Checking', overviewTitle: 'Overview', refreshCapacity: 'Refresh capacity', refreshCapacityTitle: 'Refresh NAS capacity', remountAll: 'Remount all', remountAllTitle: 'Remount all sources',
-        mountSources: 'Mounted sources', indexedContent: 'Indexed content', mediaQueue: 'Media registration queue', nasFreeSpace: 'NAS free space', nasSpace: 'NAS storage', capacityAria: 'Used and available NAS storage', sourceDistribution: 'Indexed data by source', sourceDistributionAria: 'Indexed size for each source',
+        mountSources: 'Mounted sources', indexedContent: 'Indexed content', nasFreeSpace: 'NAS free space', nasSpace: 'NAS storage', capacityAria: 'Used and available NAS storage', sourceDistribution: 'Indexed data by source', sourceDistributionAria: 'Indexed size for each source',
         connectionTitle: 'SMB connection', host: 'Remote address', port: 'Port', username: 'Username', password: 'Password', showPassword: 'Show password', hidePassword: 'Hide password', domainOptional: 'Domain (optional)', testAndSave: 'Test and save',
         passwordNotSaved: 'No password saved', passwordSavedNote: 'Password saved; the API never returns it', passwordKeepPlaceholder: 'Leave blank to keep the saved password', passwordInputPlaceholder: 'Enter SMB password', smbNotConfigured: 'SMB not configured', remoteNotConfigured: 'Remote address not configured', configured: 'Configured', notConfigured: 'Not configured', connected: 'Connected', partiallyOnline: 'Partially online',
-        sourcesTitle: 'Mount sources', addFolder: 'Add folder', credentials0600: 'Credentials 0600', readOnly: 'Read-only mounts', dedupeIndex: 'Independent dedupe index', logTitle: 'Runtime log', last80Lines: 'Latest 80 lines', logExpandHint: 'Expand to load the log', noLogs: 'No log entries',
-        newSource: 'New source', noRemotePath: 'No remote folder selected', unmounted: 'Unmounted', stopped: 'Disabled', mounted: 'Mounted', lastScan: 'Last scan', indexedSize: 'Indexed size', scanNew: 'Scan new', scanNewTitle: 'Scan for new media', remount: 'Remount', remountTitle: 'Remount source', unmount: 'Unmount', unmountTitle: 'Unmount source', remove: 'Remove', removeTitle: 'Remove source', cancel: 'Cancel', cancelTitle: 'Cancel new source',
-        nasFolder: 'NAS folder', browseSmb: 'Browse SMB folders', remotePlaceholder: 'photo/folder', albumFolder: 'Local album folder', scanInterval: 'Scan interval (minutes)', batchSize: 'Registration batch size', enableSource: 'Enable source', autoScan: 'Automatic scan', ignoreRulesLabel: 'Ignore rules', ignoreRulesAria: 'Source ignore rules', saveSource: 'Save source',
+        sourcesTitle: 'Mount sources', addFolder: 'Add folder', credentials0600: 'Credentials 0600', readOnly: 'Read-only mounts', dedupeIndex: 'Local index records', logTitle: 'Runtime log', last80Lines: 'Latest 80 lines', logExpandHint: 'Expand to load the log', noLogs: 'No log entries',
+        newSource: 'New source', noRemotePath: 'No remote folder selected', unmounted: 'Unmounted', paused: 'Mount paused', stopped: 'Disabled', mounted: 'Mounted', lastScan: 'Last scan', indexedSize: 'Indexed size', scanNew: 'Scan new', scanNewTitle: 'Scan for new media', remount: 'Remount', remountTitle: 'Remount source', pauseMount: 'Pause mount', pauseMountTitle: 'Pause this source mount', resumeMount: 'Resume mount', resumeMountTitle: 'Resume this source mount', remove: 'Remove', removeTitle: 'Remove source', cancel: 'Cancel', cancelTitle: 'Cancel new source',
+        nasFolder: 'NAS folder', browseSmb: 'Browse SMB folders', remotePlaceholder: 'photo/folder', albumFolder: 'Local album folder', scanInterval: 'Scan interval (minutes)', batchSize: 'Registration batch size', enableSource: 'Enable source', autoScan: 'Automatic scan', ignoreLivePhoto: 'Ignore Live Photos; upload still images only', ignoreRulesLabel: 'Ignore rules', ignoreRulesAria: 'Source ignore rules', saveSource: 'Save source',
         browserAria: 'Browse SMB folders', nasRoot: 'NAS root', close: 'Close', upOne: 'Up one level', chooseFolder: 'Choose this folder', folderLoading: 'Loading folders', noSubfolders: 'No subfolders', enterFolder: 'Open {name}', folderReadFailed: 'Could not load folders: {error}', chooseFolderFirst: 'Choose a share or one of its subfolders',
         apiSmbLoginFailed: 'SMB sign-in failed', apiInvalidRemotePath: 'Invalid remote folder', apiInvalidAlbumName: 'Invalid local album name', apiDuplicateAlbumName: 'That local album name is already in use', apiRemoteFilterFailed: 'Remote folder or ignore-rule validation failed', apiBrowseFailed: 'Could not list folders', apiSourceLimit: 'Source limit reached',
         notScanned: 'Not scanned', justNow: 'Just now', 'minuteAgo.one': '{count} minute ago', 'minuteAgo.other': '{count} minutes ago', 'hourAgo.one': '{count} hour ago', 'hourAgo.other': '{count} hours ago', 'dayAgo.one': '{count} day ago', 'dayAgo.other': '{count} days ago',
-        scanIdle: 'Idle', scanScanning: 'Scanning', scanError: 'Scan error', scanNotStarted: 'Not scanned', used: 'Used', available: 'Available', capacityChartDescription: 'NAS storage: {used} used and {free} available.', 'sourceChartDescription.one': '{count} source with {size} indexed.', 'sourceChartDescription.other': '{count} sources with {size} indexed.', 'sourcesMeta.one': '{count} source · {size}', 'sourcesMeta.other': '{count} sources · {size}', noSources: 'No sources', indexedTooltip: 'Indexed {size}', pendingTooltip: 'Pending {count}',
-        'ignoreRules.one': '{count} ignore rule', 'ignoreRules.other': '{count} ignore rules', filesPending: 'Files {files} · Pending {pending}', saveDraftFirst: 'Save the current new source first', connectionSuccess: 'SMB verified; remounting sources', connectionFailed: 'Connection failed: {error}', sourceSaved: 'Source saved; applying mount settings', saveFailed: 'Save failed: {error}', removeConfirm: 'Remove source “{album}”? Its dedupe state will be archived.', sourceArchived: 'Source unmounted and archived', removeFailed: 'Remove failed: {error}', saveSourceFirst: 'Save the source first', operationFailed: 'Operation failed: {error}',
-        refreshingCapacity: 'Refreshing NAS capacity', remountingAll: 'Remounting all sources', scanStarted: 'Incremental scan started', remountingSource: 'Remounting source', unmountingSource: 'Unmounting source', noEnabled: 'No enabled sources', allOnline: 'All online', onlineCount: '{mounted}/{enabled} online', watchdogOk: 'Watchdog is running', watchdogError: 'Watchdog error', 'indexedItems.one': '{count} item', 'indexedItems.other': '{count} items', 'pendingItems.one': '{count} pending', 'pendingItems.other': '{count} pending', 'sourcesScanning.one': '{count} source scanning', 'sourcesScanning.other': '{count} sources scanning', noScan: 'No scans in progress', capacityUpdated: 'Updated {time}', neverUpdated: 'Not updated yet', mountedStatus: 'Mounted · {scan}',
+        scanIdle: 'Idle', scanScanning: 'Scanning', scanError: 'Scan error', scanNotStarted: 'Not scanned', used: 'Used', available: 'Available', capacityChartDescription: 'NAS storage: {used} used and {free} available.', 'sourceChartDescription.one': '{count} source with {size} indexed.', 'sourceChartDescription.other': '{count} sources with {size} indexed.', 'sourcesMeta.one': '{count} source · {size}', 'sourcesMeta.other': '{count} sources · {size}', noSources: 'No sources', indexedTooltip: 'Indexed {size}',
+        'ignoreRules.one': '{count} ignore rule', 'ignoreRules.other': '{count} ignore rules', filesIndexed: '{files} indexed items', saveDraftFirst: 'Save the current new source first', connectionSuccess: 'SMB verified; remounting sources', connectionFailed: 'Connection failed: {error}', sourceSaved: 'Source saved; applying mount settings', saveFailed: 'Save failed: {error}', removeConfirm: 'Remove source “{album}”? Its dedupe state will be archived.', sourceArchived: 'Source unmounted and archived', removeFailed: 'Remove failed: {error}', saveSourceFirst: 'Save the source first', operationFailed: 'Operation failed: {error}',
+        refreshingCapacity: 'Refreshing NAS capacity', remountingAll: 'Remounting all sources', scanStarted: 'Incremental scan started', remountingSource: 'Remounting source', pausingMount: 'Pausing source mount', resumingMount: 'Resuming source mount', noEnabled: 'No enabled sources', allPaused: 'All sources are paused', allOnline: 'All online', onlineCount: '{mounted}/{enabled} online', watchdogOk: 'Watchdog is running', watchdogError: 'Watchdog error', 'indexedItems.one': '{count} item', 'indexedItems.other': '{count} items', capacityUpdated: 'Updated {time}', neverUpdated: 'Not updated yet', mountedStatus: 'Mounted · {scan}',
       },
     };
 
@@ -476,6 +476,18 @@
       card.querySelector('.source-title-text').textContent = album || t('newSource');
       card.querySelector('.source-path').textContent = remote ? `nas:${remote}` : t('noRemotePath');
       card.updateFilterCount?.();
+    };
+    const renderPauseButton = (card, paused) => {
+      const button = card.querySelector('.pause-source');
+      const action = paused ? 'resumeMount' : 'pauseMount';
+      if (button.dataset.action === action) return;
+      button.dataset.action = action;
+      button.dataset.messageKey = paused ? 'resumingMount' : 'pausingMount';
+      button.dataset.i18nTitle = paused ? 'resumeMountTitle' : 'pauseMountTitle';
+      button.innerHTML = `<i data-lucide="${paused ? 'play' : 'pause'}"></i><span></span>`;
+      button.querySelector('span').dataset.i18n = paused ? 'resumeMount' : 'pauseMount';
+      applyTranslations(button);
+      renderIcons();
     };
     const refreshSourceCards = () => document.querySelectorAll('.source-card').forEach(refreshSourceIdentity);
     const renderConnectionText = (data) => {
@@ -595,12 +607,12 @@
       sourceChart.setOption({
         animationDuration: reduceMotion ? 0 : 240,
         grid: { left: compactChart ? 8 : 14, right: rows.length > maxVisible ? 68 : 58, top: 15, bottom: 22, containLabel: true },
-        tooltip: { trigger: 'axis', axisPointer: { type: 'shadow' }, borderWidth: 0, backgroundColor: '#17211e', textStyle: { color: '#fff', fontSize: 12 }, formatter: (items) => { const row = rows[items[0].dataIndex]; return `${row.name}<br>${t('indexedTooltip', { size: formatBytes(row.currentBytes) })}<br>${t('pendingTooltip', { count: formatNumber(row.pendingFiles) })}`; } },
+        tooltip: { trigger: 'axis', axisPointer: { type: 'shadow' }, borderWidth: 0, backgroundColor: '#17211e', textStyle: { color: '#fff', fontSize: 12 }, formatter: (items) => { const row = rows[items[0].dataIndex]; return `${row.name}<br>${t('indexedTooltip', { size: formatBytes(row.currentBytes) })}`; } },
         aria: { enabled: true, description: tCount('sourceChartDescription', rows.length, { size: formatBytes(data.totalBytes) }) },
         xAxis: { type: 'value', splitNumber: compactChart ? 2 : 5, axisLabel: { color: '#7b8782', fontSize: compactChart ? 10 : 12, hideOverlap: true, formatter: (value) => formatBytes(value) }, splitLine: { lineStyle: { color: '#edf1ef' } }, axisLine: { show: false }, axisTick: { show: false } },
         yAxis: { type: 'category', data: rows.map((row) => row.name), axisLabel: { color: '#44504c', width: compactChart ? 100 : 120, overflow: 'truncate' }, axisLine: { show: false }, axisTick: { show: false } },
         dataZoom: rows.length > maxVisible ? [{ type: 'inside', yAxisIndex: 0, start: zoomStart, end: 100 }, { type: 'slider', yAxisIndex: 0, start: zoomStart, end: 100, width: 10, right: 6, showDetail: false, borderColor: 'transparent', fillerColor: 'rgba(15,118,110,.18)', handleSize: 0 }] : [],
-        series: [{ type: 'bar', barMaxWidth: 18, data: rows.map((row) => ({ value: Number(row.currentBytes || 0), itemStyle: { color: !row.enabled ? '#a7b0ac' : row.mounted && row.rcloneAlive ? '#3975c6' : '#c38320', borderRadius: [0, 4, 4, 0] } })), label: { show: true, position: 'right', color: '#64716c', fontSize: 11, formatter: (item) => formatBytes(item.value) } }],
+        series: [{ type: 'bar', barMaxWidth: 18, data: rows.map((row) => ({ value: Number(row.currentBytes || 0), itemStyle: { color: !row.enabled || row.paused ? '#a7b0ac' : row.mounted && row.rcloneAlive ? '#3975c6' : '#c38320', borderRadius: [0, 4, 4, 0] } })), label: { show: true, position: 'right', color: '#64716c', fontSize: 11, formatter: (item) => formatBytes(item.value) } }],
       }, true);
     }
 
@@ -628,6 +640,9 @@
       card.querySelector('.source-interval').value = source.scanIntervalMinutes || 360;
       card.querySelector('.source-batch').value = source.scanBatchSize || 500;
       card.querySelector('.source-auto-scan').checked = Boolean(source.autoScan);
+      card.querySelector('.source-ignore-live-photo').checked = Boolean(source.ignoreLivePhoto);
+      card.dataset.mountPaused = source.paused ? '1' : '0';
+      renderPauseButton(card, Boolean(source.paused));
       const ignoreField = card.querySelector('.source-ignore');
       const filterCount = card.querySelector('.source-filter-count');
       const updateFilterCount = () => {
@@ -643,7 +658,10 @@
       card.querySelector('.save-source').addEventListener('click', () => saveSource(card));
       card.querySelector('.scan-source').addEventListener('click', () => runSourceAction(card, 'scan', 'scanStarted'));
       card.querySelector('.remount-source').addEventListener('click', () => runSourceAction(card, 'remount', 'remountingSource'));
-      card.querySelector('.unmount-source').addEventListener('click', () => runSourceAction(card, 'unmount', 'unmountingSource'));
+      card.querySelector('.pause-source').addEventListener('click', () => {
+        const button = card.querySelector('.pause-source');
+        runSourceAction(card, button.dataset.action, button.dataset.messageKey);
+      });
       card.querySelector('.delete-source').addEventListener('click', () => deleteSource(card));
       if (draft) {
         card.querySelectorAll('.source-actions button:not(.delete-source)').forEach((button) => { button.classList.add('draft-action-disabled'); button.disabled = true; });
@@ -675,7 +693,7 @@
       const existingDraft = document.querySelector('.source-card.draft');
       if (existingDraft) { existingDraft.open = true; existingDraft.scrollIntoView({ behavior: reduceMotion ? 'auto' : 'smooth', block: 'start' }); return showToast(t('saveDraftFirst')); }
       const existing = document.querySelectorAll('.source-card').length;
-      const draft = { id: '', remotePath: '', albumName: `NAS-Upload-${existing + 1}`, enabled: 1, autoScan: 1, scanIntervalMinutes: 360, scanBatchSize: 500, ignoreRules: defaultIgnore };
+      const draft = { id: '', remotePath: '', albumName: `NAS-Upload-${existing + 1}`, enabled: 1, paused: 0, autoScan: 1, ignoreLivePhoto: 0, scanIntervalMinutes: 360, scanBatchSize: 500, ignoreRules: defaultIgnore };
       const card = createSourceCard(draft, true);
       $('sourceList').prepend(card);
       renderIcons();
@@ -701,6 +719,7 @@
           operation: 'save', sourceId: card.dataset.sourceId,
           remotePath: card.querySelector('.source-remote').value.trim(), albumName: card.querySelector('.source-album').value.trim(),
           enabled: card.querySelector('.source-enabled').checked ? '1' : '0', autoScan: card.querySelector('.source-auto-scan').checked ? '1' : '0',
+          ignoreLivePhoto: card.querySelector('.source-ignore-live-photo').checked ? '1' : '0',
           scanIntervalMinutes: card.querySelector('.source-interval').value, scanBatchSize: card.querySelector('.source-batch').value,
           ignoreRules: card.querySelector('.source-ignore').value,
         });
@@ -753,33 +772,34 @@
     }
 
     function renderStatus(data) {
-      const allOnline = data.enabledCount > 0 && data.mountedCount === data.enabledCount;
+      const allOnline = data.activeCount > 0 && data.activeMountedCount === data.activeCount;
       const noEnabled = data.enabledCount === 0;
+      const allPaused = data.enabledCount > 0 && data.activeCount === 0;
       renderConnectionText(latestConnection);
-      $('globalDot').className = `dot ${noEnabled ? '' : allOnline ? 'good' : data.mountedCount ? 'warn' : 'bad'}`;
-      $('globalStatus').textContent = noEnabled ? t('noEnabled') : allOnline ? t('allOnline') : t('onlineCount', { mounted: formatNumber(data.mountedCount), enabled: formatNumber(data.enabledCount) });
-      $('mountCount').textContent = `${formatNumber(data.mountedCount)} / ${formatNumber(data.enabledCount)}`;
+      $('globalDot').className = `dot ${noEnabled ? '' : allPaused ? 'warn' : allOnline ? 'good' : data.activeMountedCount ? 'warn' : 'bad'}`;
+      $('globalStatus').textContent = noEnabled ? t('noEnabled') : allPaused ? t('allPaused') : allOnline ? t('allOnline') : t('onlineCount', { mounted: formatNumber(data.activeMountedCount), enabled: formatNumber(data.activeCount) });
+      $('mountCount').textContent = `${formatNumber(data.activeMountedCount)} / ${formatNumber(data.activeCount)}`;
       $('watchdogState').textContent = data.watchdogAlive ? t('watchdogOk') : t('watchdogError');
       $('indexedValue').textContent = tCount('indexedItems', data.totalFiles);
       $('indexedDetail').textContent = formatBytes(data.totalBytes);
-      $('queueValue').textContent = tCount('pendingItems', data.totalPending);
-      $('queueDetail').textContent = data.scanningCount ? tCount('sourcesScanning', data.scanningCount) : t('noScan');
       $('freeValue').textContent = formatBytes(data.nasFree);
       $('capacityUpdated').textContent = data.capacityUpdated ? t('capacityUpdated', { time: formatRelativeTime(data.capacityUpdated, data.serverTime) }) : t('neverUpdated');
-      $('connectionDot').className = `dot ${allOnline ? 'good' : data.mountedCount ? 'warn' : ''}`;
-      if (data.enabledCount) $('connectionState').textContent = allOnline ? t('connected') : t('partiallyOnline');
+      $('connectionDot').className = `dot ${allOnline ? 'good' : data.activeMountedCount ? 'warn' : ''}`;
+      if (data.activeCount) $('connectionState').textContent = allOnline ? t('connected') : t('partiallyOnline');
 
       data.sources.forEach((state) => {
         const card = document.querySelector(`.source-card[data-source-id="${state.id}"]`);
         if (!card) return;
-        const online = state.enabled && state.mounted && state.rcloneAlive;
-        card.querySelector('.source-dot').className = `dot source-dot ${online ? 'good' : state.enabled ? 'bad' : ''}`;
-        card.querySelector('.source-status-text').textContent = state.enabled ? (online ? t('mountedStatus', { scan: scanLabel(state.scanStatus) }) : t('unmounted')) : t('stopped');
+        const online = state.enabled && !state.paused && state.mounted && state.rcloneAlive;
+        card.dataset.mountPaused = state.paused ? '1' : '0';
+        renderPauseButton(card, state.paused);
+        card.querySelector('.source-dot').className = `dot source-dot ${online ? 'good' : state.paused ? 'warn' : state.enabled ? 'bad' : ''}`;
+        card.querySelector('.source-status-text').textContent = !state.enabled ? t('stopped') : state.paused ? t('paused') : online ? t('mountedStatus', { scan: scanLabel(state.scanStatus) }) : t('unmounted');
         card.querySelector('.summary-last-scan').textContent = formatRelativeTime(state.lastScan, data.serverTime);
         card.querySelector('.summary-last-scan').title = formatTime(state.lastScan);
         card.querySelector('.summary-bytes').textContent = formatBytes(state.currentBytes);
         card.querySelector('.source-filter-count').textContent = tCount('ignoreRules', state.filterCount);
-        card.querySelector('.source-detail-status').textContent = t('filesPending', { files: formatNumber(state.currentFiles), pending: formatNumber(state.pendingFiles) });
+        card.querySelector('.source-detail-status').textContent = t('filesIndexed', { files: formatNumber(state.currentFiles) });
         if (state.errorB64) {
           const error = decodeB64(state.errorB64).trim();
           if (error && shownErrors.get(state.id) !== error) { shownErrors.set(state.id, error); showToast(error); }

@@ -1,12 +1,14 @@
 module.prop
 customize.sh
 action.sh
+build-live-photo-excludes.sh
 cgi-lib.sh
 compile-ignore.sh
 default-ignore.syncthing
 lib.sh
 mount-once.sh
 refresh-capacity.sh
+refresh-live-photo-filter.sh
 remount.sh
 scan-new.sh
 service.sh

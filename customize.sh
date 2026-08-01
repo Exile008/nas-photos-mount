@@ -12,8 +12,9 @@ set_perm "$MODPATH/rclone" 0 0 0755
 set_perm "$MODPATH/fusermount3" 0 0 0755
 
 for script in \
-  action.sh cgi-lib.sh compile-ignore.sh lib.sh mount-once.sh refresh-capacity.sh \
-  remount.sh scan-new.sh service.sh start-web.sh uninstall.sh unmount.sh watchdog.sh; do
+  action.sh build-live-photo-excludes.sh cgi-lib.sh compile-ignore.sh lib.sh mount-once.sh \
+  refresh-capacity.sh refresh-live-photo-filter.sh remount.sh scan-new.sh service.sh \
+  start-web.sh uninstall.sh unmount.sh watchdog.sh; do
   set_perm "$MODPATH/$script" 0 0 0755
 done
 
