@@ -1,0 +1,32 @@
+name: Build Magisk module
+
+on:
+  push:
+    branches: [main]
+    tags: ['v*']
+  pull_request:
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Build module ZIP
+        run: ./build.sh
+      - name: Verify archive
+        run: unzip -tq dist/*.zip
+      - name: Upload workflow artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: nas-photos-mount
+          path: |
+            dist/*.zip
+            dist/*.sha256
+      - name: Publish GitHub release
+        if: startsWith(github.ref, 'refs/tags/v')
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: gh release create "${GITHUB_REF_NAME}" dist/*.zip dist/*.sha256 --generate-notes --verify-tag
