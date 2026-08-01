@@ -1,0 +1,16 @@
+2022*
+2023*
+2024*
+2025*
+2026-0[1-2]*
+#2025-0[1-9]*
+#2025-10-0[1-5]*
+#2024-05-0[1-9]*
+#2024-05-1[1-9]*
+# OS generated files #
+(?d)$RECYCLE.BIN
+(?d)$Recycle.Bin
+(?d)#recycle
+(?d)System Volume Information
+(?d)*Zone.Identifier:$DATA
+(?i)(?d)lost+found

@@ -1,0 +1,136 @@
+#!/system/bin/sh
+
+. /data/adb/modules/nas_photos_mount/cgi-lib.sh
+require_auth
+
+if [ "$REQUEST_METHOD" = 'GET' ]; then
+  default_ignore_b64=$("$BUSYBOX" base64 "$MODDIR/default-ignore.syncthing" | tr -d '\r\n')
+  send_json_header
+  printf '{"ok":true,"defaultIgnoreB64":"%s","sources":[' "$default_ignore_b64"
+  first=true
+  for source_id in $(source_ids); do
+    source_dir="$SOURCES_DIR/$source_id"
+    remote_path=$(read_source_setting "$source_id" remote_path '')
+    album_name=$(read_source_setting "$source_id" album_name '')
+    enabled=$(read_source_setting "$source_id" enabled '1')
+    auto_scan=$(read_source_setting "$source_id" auto_scan '1')
+    interval=$(read_source_setting "$source_id" scan_interval_minutes '360')
+    batch_size=$(read_source_setting "$source_id" scan_batch_size '500')
+    ignore_b64=$("$BUSYBOX" base64 "$source_dir/ignore.syncthing" | tr -d '\r\n')
+    [ "$first" = true ] || printf ','
+    first=false
+    printf '{"id":"%s","remotePath":"%s","albumName":"%s",' "$source_id" "$remote_path" "$album_name"
+    printf '"enabled":%s,"autoScan":%s,"scanIntervalMinutes":%s,"scanBatchSize":%s,"ignoreB64":"%s"}' \
+      "$enabled" "$auto_scan" "$interval" "$batch_size" "$ignore_b64"
+  done
+  printf ']}\n'
+  exit 0
+fi
+
+[ "$REQUEST_METHOD" = 'POST' ] || fail_json '405 Method Not Allowed' 'method_not_allowed'
+body=$(read_request_body)
+operation='save'
+source_id=''
+remote_path=''
+album_name=''
+enabled='1'
+auto_scan='1'
+interval='360'
+batch_size='500'
+ignore_rules=''
+
+old_ifs=$IFS
+IFS='&'
+set -- $body
+IFS=$old_ifs
+for pair in "$@"; do
+  key=${pair%%=*}
+  encoded=${pair#*=}
+  value=$(decode_form_value "$encoded")
+  case "$key" in
+    operation) operation=$value ;;
+    sourceId) source_id=$value ;;
+    remotePath) remote_path=$value ;;
+    albumName) album_name=$value ;;
+    enabled) enabled=$value ;;
+    autoScan) auto_scan=$value ;;
+    scanIntervalMinutes) interval=$value ;;
+    scanBatchSize) batch_size=$value ;;
+    ignoreRules) ignore_rules=$value ;;
+  esac
+done
+
+if [ "$operation" = delete ]; then
+  source_exists "$source_id" || fail_json '404 Not Found' 'source_not_found'
+  nsenter -t 1 -m -- "$MODDIR/unmount.sh" "$source_id"
+  deleted_path="$DELETED_DIR/$source_id-$(date +%s)"
+  mv "$SOURCES_DIR/$source_id" "$deleted_path" || fail_json '500 Internal Server Error' 'delete_failed'
+  log_message "[$source_id] source removed and archived"
+  send_json_header
+  printf '{"ok":true,"deleted":true}\n'
+  exit 0
+fi
+
+[ "$operation" = save ] || fail_json '400 Bad Request' 'invalid_operation'
+valid_remote_path "$remote_path" || fail_json '400 Bad Request' 'invalid_remote_path'
+valid_album_name "$album_name" || fail_json '400 Bad Request' 'invalid_album_name'
+[ "$enabled" = 0 ] || [ "$enabled" = 1 ] || fail_json '400 Bad Request' 'invalid_enabled'
+[ "$auto_scan" = 0 ] || [ "$auto_scan" = 1 ] || fail_json '400 Bad Request' 'invalid_auto_scan'
+is_uint "$interval" || fail_json '400 Bad Request' 'invalid_interval'
+is_uint "$batch_size" || fail_json '400 Bad Request' 'invalid_batch_size'
+[ "$interval" -ge 15 ] && [ "$interval" -le 10080 ] || fail_json '400 Bad Request' 'invalid_interval'
+[ "$batch_size" -ge 1 ] && [ "$batch_size" -le 5000 ] || fail_json '400 Bad Request' 'invalid_batch_size'
+
+for other_id in $(source_ids); do
+  [ "$other_id" = "$source_id" ] && continue
+  [ "$(read_source_setting "$other_id" album_name '')" = "$album_name" ] && fail_json '409 Conflict' 'duplicate_album_name'
+done
+
+request_dir="$DATA_DIR/source-request.$$"
+mkdir "$request_dir" || fail_json '500 Internal Server Error' 'request_setup_failed'
+trap 'rm -rf "$request_dir"' EXIT
+printf '%s\n' "$ignore_rules" > "$request_dir/ignore.syncthing"
+"$MODDIR/compile-ignore.sh" "$request_dir/ignore.syncthing" "$request_dir/exclude.rclone" "$request_dir/ignore-case" \
+  || fail_json '400 Bad Request' 'invalid_ignore_rules'
+
+ignore_case_flag=''
+[ -e "$request_dir/ignore-case" ] && ignore_case_flag='--ignore-case'
+export LD_LIBRARY_PATH="$MODDIR"
+if ! timeout 25 "$RCLONE" lsf "nas:$remote_path" --config "$CONFIG" --dirs-only --max-depth 1 \
+  --exclude-from "$request_dir/exclude.rclone" $ignore_case_flag \
+  >/dev/null 2> "$request_dir/validation.log"; then
+  fail_json '400 Bad Request' 'remote_or_filter_validation_failed'
+fi
+
+if [ -n "$source_id" ]; then
+  source_exists "$source_id" || fail_json '404 Not Found' 'source_not_found'
+else
+  source_count=$(source_ids | "$BUSYBOX" wc -l | tr -d ' ')
+  [ "$source_count" -lt 32 ] || fail_json '409 Conflict' 'source_limit_reached'
+  random_part=$("$BUSYBOX" od -An -N4 -tx1 /dev/urandom | tr -d ' \r\n')
+  source_id="source-$(date +%s)-$random_part"
+fi
+
+source_dir="$SOURCES_DIR/$source_id"
+source_state="$source_dir/state"
+mkdir -p "$source_dir" "$source_state"
+printf '%s\n' "$remote_path" > "$source_dir/remote_path"
+printf '%s\n' "$album_name" > "$source_dir/album_name"
+printf '%s\n' "$enabled" > "$source_dir/enabled"
+printf '%s\n' "$auto_scan" > "$source_dir/auto_scan"
+printf '%s\n' "$interval" > "$source_dir/scan_interval_minutes"
+printf '%s\n' "$batch_size" > "$source_dir/scan_batch_size"
+mv "$request_dir/ignore.syncthing" "$source_dir/ignore.syncthing"
+mv "$request_dir/exclude.rclone" "$source_state/exclude.rclone"
+if [ -e "$request_dir/ignore-case" ]; then
+  mv "$request_dir/ignore-case" "$source_state/ignore-case"
+else
+  rm -f "$source_state/ignore-case"
+fi
+[ -e "$source_state/seen.tsv" ] || : > "$source_state/seen.tsv"
+secure_source_permissions "$source_dir"
+
+log_message "[$source_id] source saved remote=$remote_path album=$album_name enabled=$enabled"
+"$BUSYBOX" setsid nsenter -t 1 -m -- "$MODDIR/remount.sh" "$source_id" </dev/null >> "$LOG" 2>&1 &
+send_json_header
+printf '{"ok":true,"sourceId":"%s","remountStarted":true}\n' "$source_id"

@@ -1,0 +1,91 @@
+#!/system/bin/sh
+
+. /data/adb/modules/nas_photos_mount/cgi-lib.sh
+require_auth
+
+watchdog_pid=$(state_value service.pid '0')
+watchdog_alive=false
+if is_uint "$watchdog_pid" && [ -r "/proc/$watchdog_pid/cmdline" ]; then
+  watchdog_cmdline=$(tr '\000' ' ' < "/proc/$watchdog_pid/cmdline")
+  case "$watchdog_cmdline" in
+    *"$MODDIR/watchdog.sh"*) watchdog_alive=true ;;
+  esac
+else
+  watchdog_pid=0
+fi
+capacity_updated=$(state_value nas-about.epoch '0')
+nas_total=0
+nas_used=0
+nas_free=0
+if [ -r "$STATE_DIR/nas-about.json" ]; then
+  nas_total=$(sed -n 's/.*"total":[[:space:]]*\([0-9]*\).*/\1/p' "$STATE_DIR/nas-about.json")
+  nas_used=$(sed -n 's/.*"used":[[:space:]]*\([0-9]*\).*/\1/p' "$STATE_DIR/nas-about.json")
+  nas_free=$(sed -n 's/.*"free":[[:space:]]*\([0-9]*\).*/\1/p' "$STATE_DIR/nas-about.json")
+fi
+[ -n "$nas_total" ] || nas_total=0
+[ -n "$nas_used" ] || nas_used=0
+[ -n "$nas_free" ] || nas_free=0
+
+enabled_count=0
+mounted_count=0
+total_files=0
+total_bytes=0
+total_pending=0
+scanning_count=0
+
+send_json_header
+printf '{"ok":true,"watchdogAlive":%s,"watchdogPid":%s,' "$watchdog_alive" "$watchdog_pid"
+printf '"nasTotal":%s,"nasUsed":%s,"nasFree":%s,"capacityUpdated":%s,' "$nas_total" "$nas_used" "$nas_free" "$capacity_updated"
+printf '"sources":['
+first=true
+for source_id in $(source_ids); do
+  source_dir="$SOURCES_DIR/$source_id"
+  source_state="$source_dir/state"
+  enabled=$(read_source_setting "$source_id" enabled '1')
+  [ "$enabled" = 0 ] || [ "$enabled" = 1 ] || enabled=0
+  source_mount="$MOUNT_BASE/$source_id"
+  mounted=false
+  mountpoint -q "$source_mount" && mounted=true
+  rclone_pid=$(read_file_value "$source_state/rclone.pid" '0')
+  is_uint "$rclone_pid" || rclone_pid=0
+  rclone_alive=false
+  if [ -r "/proc/$rclone_pid/cmdline" ]; then
+    cmdline=$(tr '\000' ' ' < "/proc/$rclone_pid/cmdline")
+    case "$cmdline" in *"$source_mount"*) rclone_alive=true ;; esac
+  fi
+  scan_status=$(read_file_value "$source_state/scan.status" 'not_started')
+  case "$scan_status" in idle|scanning|error|not_started) ;; *) scan_status=error ;; esac
+  current_files=$(read_file_value "$source_state/current.files" '0')
+  current_bytes=$(read_file_value "$source_state/current.bytes" '0')
+  pending_files=$(read_file_value "$source_state/pending.files" '0')
+  last_submitted=$(read_file_value "$source_state/last.submitted" '0')
+  last_scan=$(read_file_value "$source_state/last_scan.epoch" '0')
+  is_uint "$current_files" || current_files=0
+  is_uint "$current_bytes" || current_bytes=0
+  is_uint "$pending_files" || pending_files=0
+  is_uint "$last_submitted" || last_submitted=0
+  is_uint "$last_scan" || last_scan=0
+  filter_count=$("$BUSYBOX" awk '{line=$0;sub(/^[[:space:]]*/,"",line);if(line!=""&&substr(line,1,1)!="#")count++}END{print count+0}' "$source_dir/ignore.syncthing")
+  error_b64=''
+  [ -r "$source_state/scan.error" ] && error_b64=$("$BUSYBOX" base64 "$source_state/scan.error" | tr -d '\r\n')
+
+  [ "$enabled" = 1 ] && enabled_count=$((enabled_count + 1))
+  [ "$mounted" = true ] && mounted_count=$((mounted_count + 1))
+  [ "$scan_status" = scanning ] && scanning_count=$((scanning_count + 1))
+  total_files=$((total_files + current_files))
+  total_bytes=$((total_bytes + current_bytes))
+  total_pending=$((total_pending + pending_files))
+
+  [ "$first" = true ] || printf ','
+  first=false
+  printf '{"id":"%s","enabled":%s,"mounted":%s,"rcloneAlive":%s,"rclonePid":%s,' \
+    "$source_id" "$enabled" "$mounted" "$rclone_alive" "$rclone_pid"
+  printf '"scanStatus":"%s","currentFiles":%s,"currentBytes":%s,"pendingFiles":%s,' \
+    "$scan_status" "$current_files" "$current_bytes" "$pending_files"
+  printf '"lastSubmitted":%s,"lastScan":%s,"filterCount":%s,"errorB64":"%s"}' \
+    "$last_submitted" "$last_scan" "$filter_count" "$error_b64"
+done
+printf '],'
+printf '"enabledCount":%s,"mountedCount":%s,"scanningCount":%s,' "$enabled_count" "$mounted_count" "$scanning_count"
+printf '"totalFiles":%s,"totalBytes":%s,"totalPending":%s,"serverTime":%s}\n' \
+  "$total_files" "$total_bytes" "$total_pending" "$(date +%s)"

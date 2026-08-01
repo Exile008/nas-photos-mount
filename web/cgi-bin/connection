@@ -1,0 +1,88 @@
+#!/system/bin/sh
+
+. /data/adb/modules/nas_photos_mount/cgi-lib.sh
+require_auth
+
+if [ "$REQUEST_METHOD" = 'GET' ]; then
+  host=$(rclone_config_value host)
+  port=$(rclone_config_value port)
+  username=$(rclone_config_value user)
+  domain=$(rclone_config_value domain)
+  password_value=$(rclone_config_value pass)
+  [ -n "$port" ] || port=445
+  has_password=false
+  [ -n "$password_value" ] && has_password=true
+  send_json_header
+  printf '{"ok":true,"host":"%s","port":%s,"username":"%s","domain":"%s","hasPassword":%s}\n' \
+    "$host" "$port" "$username" "$domain" "$has_password"
+  exit 0
+fi
+
+[ "$REQUEST_METHOD" = 'POST' ] || fail_json '405 Method Not Allowed' 'method_not_allowed'
+body=$(read_request_body)
+host=''
+port='445'
+username=''
+password=''
+domain=''
+
+old_ifs=$IFS
+IFS='&'
+set -- $body
+IFS=$old_ifs
+for pair in "$@"; do
+  key=${pair%%=*}
+  encoded=${pair#*=}
+  value=$(decode_form_value "$encoded")
+  case "$key" in
+    host) host=$value ;;
+    port) port=$value ;;
+    username) username=$value ;;
+    password) password=$value ;;
+    domain) domain=$value ;;
+  esac
+done
+
+valid_host "$host" || fail_json '400 Bad Request' 'invalid_host'
+is_uint "$port" || fail_json '400 Bad Request' 'invalid_port'
+[ "$port" -ge 1 ] && [ "$port" -le 65535 ] || fail_json '400 Bad Request' 'invalid_port'
+[ -n "$username" ] || fail_json '400 Bad Request' 'username_required'
+valid_connection_value "$username" 255 || fail_json '400 Bad Request' 'invalid_username'
+valid_connection_value "$domain" 255 || fail_json '400 Bad Request' 'invalid_domain'
+[ "${#password}" -le 512 ] || fail_json '400 Bad Request' 'password_too_long'
+[ "$(printf '%s' "$password" | tr -d '\r\n')" = "$password" ] || fail_json '400 Bad Request' 'invalid_password'
+
+obscured_password=$(rclone_config_value pass)
+if [ -n "$password" ]; then
+  export LD_LIBRARY_PATH="$MODDIR"
+  obscured_password=$(printf '%s' "$password" | "$RCLONE" obscure -) || fail_json '500 Internal Server Error' 'password_obscure_failed'
+fi
+[ -n "$obscured_password" ] || fail_json '400 Bad Request' 'password_required'
+
+request_dir="$DATA_DIR/connection-request.$$"
+mkdir "$request_dir" || fail_json '500 Internal Server Error' 'request_setup_failed'
+trap 'rm -rf "$request_dir"' EXIT
+temp_config="$request_dir/rclone.conf"
+{
+  printf '%s\n' '[nas]'
+  printf '%s\n' 'type = smb'
+  printf 'host = %s\n' "$host"
+  printf 'user = %s\n' "$username"
+  printf 'pass = %s\n' "$obscured_password"
+  printf 'port = %s\n' "$port"
+  [ -n "$domain" ] && printf 'domain = %s\n' "$domain"
+} > "$temp_config"
+chmod 0600 "$temp_config"
+
+export LD_LIBRARY_PATH="$MODDIR"
+if ! timeout 25 "$RCLONE" lsd nas: --config "$temp_config" --contimeout 5s --timeout 15s \
+  >/dev/null 2> "$request_dir/validation.log"; then
+  fail_json '401 Unauthorized' 'smb_login_failed'
+fi
+
+mv "$temp_config" "$CONFIG"
+chmod 0600 "$CONFIG"
+log_message "SMB connection updated for host=$host port=$port user=$username"
+"$BUSYBOX" setsid nsenter -t 1 -m -- "$MODDIR/remount.sh" </dev/null >> "$LOG" 2>&1 &
+send_json_header
+printf '{"ok":true,"remountStarted":true}\n'

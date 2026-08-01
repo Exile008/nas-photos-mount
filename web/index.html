@@ -1,0 +1,742 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="color-scheme" content="light">
+  <title>NAS Photos Mount</title>
+  <style>
+    :root {
+      color-scheme: light;
+      --bg: #f5f7f8;
+      --surface: #ffffff;
+      --surface-soft: #f8faf9;
+      --surface-tint: #eef6f3;
+      --text: #17201d;
+      --muted: #64716c;
+      --faint: #8b9692;
+      --line: #dce3e0;
+      --line-strong: #c8d2ce;
+      --accent: #0f766e;
+      --accent-strong: #0a5c56;
+      --accent-soft: #dff2ee;
+      --good: #16835b;
+      --warn: #a66a06;
+      --bad: #b63b32;
+      --blue: #3975c6;
+      --radius: 8px;
+      --ease-out: cubic-bezier(.23, 1, .32, 1);
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    }
+    * { box-sizing: border-box; }
+    html { background: var(--bg); }
+    body { margin: 0; background: var(--bg); color: var(--text); font-size: 14px; }
+    button, input, textarea { font: inherit; letter-spacing: 0; }
+    button { min-height: 36px; display: inline-flex; align-items: center; justify-content: center; gap: 7px; border: 1px solid var(--line-strong); border-radius: 7px; background: var(--surface); color: var(--text); padding: 7px 11px; cursor: pointer; transition: transform 140ms var(--ease-out), border-color 140ms ease, background-color 140ms ease, color 140ms ease; }
+    button:active { transform: scale(.97); }
+    button:disabled { opacity: .48; cursor: wait; transform: none; }
+    button.primary { border-color: var(--accent); background: var(--accent); color: white; }
+    button.danger { color: var(--bad); border-color: #e9c6c2; }
+    button.icon-only { width: 36px; padding: 0; }
+    button svg, .icon { width: 16px; height: 16px; flex: 0 0 auto; stroke-width: 1.8; }
+    input, textarea { width: 100%; border: 1px solid var(--line-strong); border-radius: 7px; background: white; color: var(--text); padding: 9px 10px; }
+    input:focus, textarea:focus { outline: 3px solid rgba(15,118,110,.14); border-color: var(--accent); }
+    textarea { min-height: 184px; resize: vertical; font: 13px/1.55 ui-monospace, SFMono-Regular, Menlo, monospace; }
+    summary { list-style: none; }
+    summary::-webkit-details-marker { display: none; }
+    summary:focus { outline: none; }
+    summary:focus-visible { outline: 3px solid rgba(15,118,110,.22); outline-offset: -3px; border-radius: 7px; }
+    h1, h2, h3, p { margin-top: 0; }
+    h1 { font-size: 20px; line-height: 1.25; margin-bottom: 2px; }
+    h2 { font-size: 16px; line-height: 1.3; margin-bottom: 0; }
+    h3 { font-size: 15px; line-height: 1.3; margin: 0; overflow-wrap: anywhere; }
+    .hidden { display: none !important; }
+    .muted { color: var(--muted); }
+    .eyebrow { color: var(--faint); font-size: 11px; font-weight: 700; letter-spacing: 0; text-transform: uppercase; }
+    .field-note { color: var(--muted); font-size: 12px; line-height: 1.5; margin-top: 6px; }
+
+    header { position: sticky; top: 0; z-index: 10; border-bottom: 1px solid rgba(200,210,206,.88); background: rgba(255,255,255,.94); backdrop-filter: blur(12px); }
+    .header-inner { max-width: 1180px; min-height: 62px; margin: 0 auto; padding: 10px 20px; display: flex; align-items: center; justify-content: space-between; gap: 18px; }
+    .brand-row { display: flex; align-items: center; gap: 11px; min-width: 0; }
+    .brand-mark { width: 34px; height: 34px; display: grid; place-items: center; border-radius: 8px; background: var(--accent); color: white; }
+    .brand-mark svg { width: 18px; height: 18px; }
+    .brand-copy { min-width: 0; }
+    .brand { font-size: 16px; font-weight: 750; line-height: 1.25; }
+    #activeSummary { color: var(--muted); font-size: 12px; overflow-wrap: anywhere; }
+    .health-pill, .status-pill { display: inline-flex; align-items: center; gap: 7px; white-space: nowrap; }
+    .health-pill { min-height: 32px; padding: 6px 10px; border: 1px solid var(--line); border-radius: 999px; background: var(--surface-soft); color: var(--muted); font-size: 12px; font-weight: 650; }
+    .dot { width: 8px; height: 8px; border-radius: 50%; background: var(--faint); flex: 0 0 auto; }
+    .dot.good { background: var(--good); box-shadow: 0 0 0 3px rgba(22,131,91,.1); }
+    .dot.warn { background: var(--warn); box-shadow: 0 0 0 3px rgba(166,106,6,.1); }
+    .dot.bad { background: var(--bad); box-shadow: 0 0 0 3px rgba(182,59,50,.1); }
+
+    main { max-width: 1180px; margin: 0 auto; padding: 26px 20px 64px; }
+    .page-section { padding: 24px 0; border-bottom: 1px solid var(--line); }
+    .page-section:first-child { padding-top: 8px; }
+    .page-section:last-child { border-bottom: 0; }
+    .section-head { display: flex; align-items: center; justify-content: space-between; gap: 16px; margin-bottom: 15px; }
+    .section-title { display: flex; align-items: center; gap: 9px; }
+    .section-icon { width: 30px; height: 30px; display: grid; place-items: center; border: 1px solid var(--line); border-radius: 7px; background: var(--surface); color: var(--accent); }
+    .toolbar { display: flex; flex-wrap: wrap; gap: 8px; }
+
+    .stats { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); border: 1px solid var(--line); border-radius: var(--radius); background: var(--surface); overflow: hidden; }
+    .stat { min-height: 82px; padding: 13px 15px; border-right: 1px solid var(--line); }
+    .stat:last-child { border-right: 0; }
+    .stat-label { color: var(--muted); font-size: 11px; font-weight: 650; margin-bottom: 8px; }
+    .stat-value { font-size: 18px; font-weight: 750; overflow-wrap: anywhere; }
+    .stat-detail { color: var(--muted); font-size: 12px; margin-top: 4px; }
+    .visual-grid { display: grid; grid-template-columns: minmax(300px, .8fr) minmax(0, 1.4fr); gap: 12px; margin-top: 12px; }
+    .chart-panel { min-width: 0; border: 1px solid var(--line); border-radius: var(--radius); background: var(--surface); overflow: hidden; }
+    .chart-head { min-height: 47px; padding: 11px 14px; display: flex; align-items: center; justify-content: space-between; gap: 12px; border-bottom: 1px solid var(--line); }
+    .chart-title { font-size: 13px; font-weight: 700; }
+    .chart-meta { color: var(--muted); font-size: 12px; text-align: right; }
+    .chart { width: 100%; height: 224px; }
+
+    .disclosure { border: 1px solid var(--line); border-radius: var(--radius); background: var(--surface); overflow: hidden; }
+    .disclosure > summary { min-height: 64px; padding: 12px 14px; display: flex; align-items: center; gap: 12px; cursor: pointer; user-select: none; }
+    .disclosure-leading { width: 36px; height: 36px; display: grid; place-items: center; border-radius: 7px; background: var(--surface-tint); color: var(--accent); flex: 0 0 auto; }
+    .disclosure-copy { min-width: 0; flex: 1; }
+    .disclosure-title { display: block; font-weight: 720; margin-bottom: 3px; }
+    .disclosure-subtitle { display: block; color: var(--muted); font-size: 12px; overflow-wrap: anywhere; }
+    .chevron { color: var(--muted); transition: transform 170ms var(--ease-out); }
+    details[open] > summary .chevron { transform: rotate(180deg); }
+    .disclosure-body { padding: 16px; border-top: 1px solid var(--line); background: var(--surface-soft); }
+    .connection-grid { display: grid; grid-template-columns: minmax(220px, 2fr) 110px minmax(170px, 1.1fr) minmax(180px, 1.2fr) minmax(150px, 1fr); gap: 13px; align-items: start; }
+    .field { min-width: 0; }
+    .field label, .field-label { display: block; font-size: 12px; font-weight: 680; margin-bottom: 7px; }
+    .password-wrap { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 7px; }
+    .connection-actions { display: flex; justify-content: flex-end; margin-top: 14px; }
+
+    .source-list { display: grid; gap: 10px; }
+    .source-card { border: 1px solid var(--line); border-radius: var(--radius); background: var(--surface); overflow: hidden; }
+    .source-card[open] { border-color: var(--line-strong); box-shadow: 0 8px 24px rgba(25,48,40,.06); }
+    .source-card.draft { border-color: rgba(15,118,110,.48); }
+    .source-summary { min-height: 92px; padding: 13px 14px; display: grid; grid-template-columns: minmax(260px, 1.25fr) minmax(230px, .8fr) auto; gap: 18px; align-items: center; cursor: pointer; user-select: none; }
+    .source-overview { min-width: 0; display: grid; grid-template-columns: 38px minmax(0, 1fr); gap: 11px; align-items: center; }
+    .folder-mark { width: 38px; height: 38px; display: grid; place-items: center; border-radius: 8px; background: #edf3f8; color: var(--blue); }
+    .folder-mark svg { width: 19px; height: 19px; }
+    .source-title { min-width: 0; }
+    .source-path { margin-top: 4px; color: var(--muted); font: 12px/1.4 ui-monospace, SFMono-Regular, Menlo, monospace; overflow-wrap: anywhere; }
+    .source-status { margin-top: 5px; color: var(--muted); font-size: 12px; }
+    .source-facts { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; }
+    .source-fact { min-width: 0; padding-left: 11px; border-left: 1px solid var(--line); }
+    .source-fact-label { color: var(--faint); font-size: 10px; font-weight: 680; margin-bottom: 5px; }
+    .source-fact-value { font-size: 12px; font-weight: 680; overflow-wrap: anywhere; }
+    .source-summary-end { display: flex; align-items: center; gap: 10px; }
+    .source-actions { display: grid; grid-template-columns: repeat(4, auto); gap: 6px; }
+    .source-actions button { min-height: 34px; padding: 6px 9px; font-size: 12px; }
+    .source-body { padding: 17px; border-top: 1px solid var(--line); background: var(--surface-soft); }
+    .source-grid { display: grid; grid-template-columns: minmax(0, 2fr) minmax(180px, 1fr) minmax(130px, .7fr) minmax(130px, .7fr); gap: 13px; }
+    .remote-input { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 7px; }
+    .source-options { display: flex; flex-wrap: wrap; align-items: center; gap: 18px; margin: 15px 0; color: var(--muted); }
+    .source-options label { display: inline-flex; align-items: center; gap: 8px; }
+    .source-options input { width: 17px; height: 17px; accent-color: var(--accent); }
+    .rules-head { display: flex; align-items: baseline; justify-content: space-between; gap: 12px; margin-bottom: 7px; }
+    .source-save { display: flex; justify-content: flex-end; margin-top: 12px; }
+
+    .security-strip { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 12px; }
+    .security-item { display: inline-flex; align-items: center; gap: 6px; padding: 6px 9px; border: 1px solid var(--line); border-radius: 999px; background: var(--surface); color: var(--muted); font-size: 11px; }
+    .security-item svg { width: 14px; height: 14px; color: var(--accent); }
+    pre { margin: 0; max-height: 280px; overflow: auto; border: 1px solid #26332f; border-radius: 7px; background: #17211e; color: #dfe8e4; padding: 13px; font: 12px/1.55 ui-monospace, SFMono-Regular, Menlo, monospace; white-space: pre-wrap; overflow-wrap: anywhere; }
+
+    .modal-backdrop { position: fixed; inset: 0; z-index: 30; display: grid; place-items: center; padding: 18px; background: rgba(19,31,27,.48); backdrop-filter: blur(3px); }
+    .modal { width: min(720px, 100%); max-height: min(700px, calc(100vh - 36px)); display: flex; flex-direction: column; border: 1px solid var(--line-strong); border-radius: var(--radius); background: var(--surface); box-shadow: 0 22px 60px rgba(12,28,22,.24); }
+    .modal-head { min-height: 56px; padding: 10px 12px 10px 15px; display: flex; align-items: center; justify-content: space-between; gap: 12px; border-bottom: 1px solid var(--line); }
+    .browser-path { min-width: 0; display: flex; align-items: center; gap: 8px; font: 13px/1.4 ui-monospace, SFMono-Regular, Menlo, monospace; overflow-wrap: anywhere; }
+    .folder-list { min-height: 180px; overflow: auto; }
+    .folder-row { min-height: 49px; padding: 7px 12px 7px 15px; display: flex; align-items: center; justify-content: space-between; gap: 12px; border-bottom: 1px solid #edf1ef; }
+    .folder-row:last-child { border-bottom: 0; }
+    .folder-name { min-width: 0; display: flex; align-items: center; gap: 9px; overflow-wrap: anywhere; }
+    .folder-name svg { width: 16px; height: 16px; color: var(--blue); flex: 0 0 auto; }
+    .modal-foot { padding: 11px 12px; display: flex; justify-content: space-between; gap: 8px; border-top: 1px solid var(--line); }
+    .empty { padding: 36px 12px; color: var(--muted); text-align: center; }
+
+    .auth { max-width: 500px; margin: 80px auto; padding: 22px; border: 1px solid var(--line); border-radius: var(--radius); background: white; }
+    .toast { position: fixed; right: 18px; bottom: 18px; z-index: 40; max-width: min(440px, calc(100vw - 36px)); padding: 11px 14px; border-radius: 7px; background: #17211e; color: white; box-shadow: 0 12px 30px rgba(12,28,22,.22); opacity: 0; pointer-events: none; transform: translateY(8px); transition: opacity 170ms ease, transform 170ms var(--ease-out); }
+    .toast.visible { opacity: 1; transform: translateY(0); }
+
+    @media (hover: hover) and (pointer: fine) {
+      button:hover { border-color: #9eaca6; background: #f9fbfa; }
+      button.primary:hover { border-color: var(--accent-strong); background: var(--accent-strong); }
+      .source-card > summary:hover, .disclosure > summary:hover { background: #fbfcfc; }
+    }
+    @media (max-width: 1060px) {
+      .source-summary { grid-template-columns: minmax(240px, 1fr) auto; }
+      .source-facts { grid-column: 1; grid-row: 2; }
+      .source-summary-end { grid-column: 2; grid-row: 1 / span 2; }
+      .connection-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+      .source-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+    }
+    @media (max-width: 760px) {
+      .stats { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+      .stat:nth-child(2) { border-right: 0; }
+      .stat:nth-child(-n+2) { border-bottom: 1px solid var(--line); }
+      .visual-grid { grid-template-columns: 1fr; }
+      .source-summary { grid-template-columns: minmax(0, 1fr); gap: 13px; }
+      .source-facts, .source-summary-end { grid-column: 1; grid-row: auto; }
+      .source-summary-end { justify-content: space-between; }
+      .source-actions { flex: 1; grid-template-columns: repeat(4, minmax(0, 1fr)); }
+      .source-actions button { padding-left: 6px; padding-right: 6px; }
+    }
+    @media (max-width: 620px) {
+      .header-inner, main { padding-left: 14px; padding-right: 14px; }
+      .header-inner { align-items: flex-start; }
+      .brand-mark { display: none; }
+      main { padding-top: 18px; }
+      .page-section { padding: 20px 0; }
+      .section-head { align-items: flex-start; }
+      .section-head > .toolbar { justify-content: flex-end; }
+      .section-head > .toolbar button span { display: none; }
+      .section-head > .toolbar button { width: 36px; padding: 0; }
+      .chart { height: 214px; }
+      .connection-grid, .source-grid { grid-template-columns: 1fr; }
+      .disclosure > summary { padding: 11px 12px; }
+      .disclosure-body, .source-body { padding: 14px; }
+      .source-summary { padding: 13px; }
+      .source-facts { gap: 8px; }
+      .source-fact { padding: 8px 10px; border: 1px solid var(--line); border-radius: 7px; background: var(--surface-soft); }
+      .source-summary-end { align-items: flex-end; }
+      .source-actions { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+      .source-actions button { width: 100%; }
+      .source-summary-end > .chevron { align-self: center; }
+      .source-options { align-items: flex-start; flex-direction: column; gap: 10px; }
+      .source-save button, .connection-actions button { width: 100%; }
+      .modal-foot { flex-wrap: wrap; }
+    }
+    @media (max-width: 390px) {
+      .health-pill { padding-left: 8px; padding-right: 8px; }
+      .health-pill span:last-child { max-width: 92px; overflow: hidden; text-overflow: ellipsis; }
+    }
+    @media (prefers-reduced-motion: reduce) {
+      *, *::before, *::after { scroll-behavior: auto !important; transition-duration: .01ms !important; animation-duration: .01ms !important; }
+    }
+  </style>
+</head>
+<body>
+  <div id="auth" class="auth hidden">
+    <h1>管理面板不可用</h1>
+    <p class="muted">请从 Magisk 模块操作入口重新打开。</p>
+  </div>
+
+  <div id="app" class="hidden">
+    <header>
+      <div class="header-inner">
+        <div class="brand-row">
+          <div class="brand-mark"><i data-lucide="images"></i></div>
+          <div class="brand-copy"><div class="brand">NAS Photos Mount</div><div id="activeSummary">正在读取状态</div></div>
+        </div>
+        <div class="health-pill"><span id="globalDot" class="dot"></span><span id="globalStatus">检查中</span></div>
+      </div>
+    </header>
+
+    <main>
+      <section class="page-section">
+        <div class="section-head">
+          <div class="section-title"><span class="section-icon"><i data-lucide="activity"></i></span><h1>运行概览</h1></div>
+          <div class="toolbar">
+            <button id="refreshCapacityBtn" type="button" title="刷新 NAS 容量"><i data-lucide="refresh-cw"></i><span>刷新容量</span></button>
+            <button id="remountAllBtn" type="button" title="重新挂载全部来源"><i data-lucide="rotate-ccw"></i><span>重新挂载</span></button>
+          </div>
+        </div>
+        <div class="stats">
+          <div class="stat"><div class="stat-label">来源挂载</div><div class="stat-value" id="mountCount">--</div><div class="stat-detail" id="watchdogState">--</div></div>
+          <div class="stat"><div class="stat-label">已索引内容</div><div class="stat-value" id="indexedValue">--</div><div class="stat-detail" id="indexedDetail">--</div></div>
+          <div class="stat"><div class="stat-label">媒体登记队列</div><div class="stat-value" id="queueValue">--</div><div class="stat-detail" id="queueDetail">--</div></div>
+          <div class="stat"><div class="stat-label">NAS 可用空间</div><div class="stat-value" id="freeValue">--</div><div class="stat-detail" id="capacityUpdated">--</div></div>
+        </div>
+        <div class="visual-grid">
+          <div class="chart-panel">
+            <div class="chart-head"><div class="chart-title">NAS 空间</div><div id="capacityChartMeta" class="chart-meta">--</div></div>
+            <div id="capacityChart" class="chart" role="img" aria-label="NAS 已使用和可用空间"></div>
+          </div>
+          <div class="chart-panel">
+            <div class="chart-head"><div class="chart-title">来源索引分布</div><div id="sourceChartMeta" class="chart-meta">--</div></div>
+            <div id="sourceChart" class="chart" role="img" aria-label="各来源已索引大小"></div>
+          </div>
+        </div>
+      </section>
+
+      <section class="page-section">
+        <details id="connectionPanel" class="disclosure">
+          <summary>
+            <span class="disclosure-leading"><i data-lucide="server"></i></span>
+            <span class="disclosure-copy"><span class="disclosure-title">SMB 连接</span><span id="connectionSummary" class="disclosure-subtitle">尚未配置</span></span>
+            <span class="status-pill"><span id="connectionDot" class="dot"></span><span id="connectionState">未配置</span></span>
+            <i class="chevron" data-lucide="chevron-down"></i>
+          </summary>
+          <div class="disclosure-body">
+            <div class="connection-grid">
+              <div class="field"><label for="smbHost">远程地址</label><input id="smbHost" autocomplete="off" spellcheck="false" placeholder="192.168.1.10"></div>
+              <div class="field"><label for="smbPort">端口</label><input id="smbPort" type="number" min="1" max="65535" value="445"></div>
+              <div class="field"><label for="smbUser">账号</label><input id="smbUser" autocomplete="username" spellcheck="false"></div>
+              <div class="field">
+                <label for="smbPassword">密码</label>
+                <div class="password-wrap"><input id="smbPassword" type="password" autocomplete="current-password"><button id="togglePasswordBtn" class="icon-only" type="button" title="显示密码" aria-label="显示密码"><i data-lucide="eye"></i></button></div>
+                <div id="passwordNote" class="field-note">尚未保存密码</div>
+              </div>
+              <div class="field"><label for="smbDomain">域（可选）</label><input id="smbDomain" autocomplete="off" spellcheck="false" placeholder="WORKGROUP"></div>
+            </div>
+            <div class="connection-actions"><button id="saveConnectionBtn" class="primary" type="button"><i data-lucide="shield-check"></i>测试并保存</button></div>
+          </div>
+        </details>
+      </section>
+
+      <section class="page-section">
+        <div class="section-head">
+          <div class="section-title"><span class="section-icon"><i data-lucide="folders"></i></span><h2>挂载来源</h2></div>
+          <button id="addSourceBtn" class="primary" type="button"><i data-lucide="folder-plus"></i>添加目录</button>
+        </div>
+        <div id="sourceList" class="source-list"></div>
+        <div class="security-strip">
+          <span class="security-item"><i data-lucide="lock-keyhole"></i>凭据 0600</span>
+          <span class="security-item"><i data-lucide="eye-off"></i>只读挂载</span>
+          <span class="security-item"><i data-lucide="database"></i>独立去重索引</span>
+        </div>
+      </section>
+
+      <section class="page-section">
+        <details id="logPanel" class="disclosure">
+          <summary>
+            <span class="disclosure-leading"><i data-lucide="file-clock"></i></span>
+            <span class="disclosure-copy"><span class="disclosure-title">运行日志</span><span class="disclosure-subtitle">最近 80 行</span></span>
+            <i class="chevron" data-lucide="chevron-down"></i>
+          </summary>
+          <div class="disclosure-body"><pre id="logView">展开后读取日志</pre></div>
+        </details>
+      </section>
+    </main>
+  </div>
+
+  <template id="sourceTemplate">
+    <details class="source-card">
+      <summary class="source-summary">
+        <div class="source-overview">
+          <span class="folder-mark"><i data-lucide="folder-closed"></i></span>
+          <div class="source-title">
+            <h3 class="source-title-text">新来源</h3>
+            <div class="source-path">尚未选择远程目录</div>
+            <div class="source-status status-pill"><span class="dot source-dot"></span><span class="source-status-text">未挂载</span></div>
+          </div>
+        </div>
+        <div class="source-facts">
+          <div class="source-fact"><div class="source-fact-label">上次扫描</div><div class="source-fact-value summary-last-scan">--</div></div>
+          <div class="source-fact"><div class="source-fact-label">已索引大小</div><div class="source-fact-value summary-bytes">--</div></div>
+        </div>
+        <div class="source-summary-end">
+          <div class="source-actions">
+            <button class="scan-source" type="button" title="扫描新增"><i data-lucide="scan-search"></i>扫描新增</button>
+            <button class="remount-source" type="button" title="重新挂载"><i data-lucide="rotate-ccw"></i>重新挂载</button>
+            <button class="unmount-source" type="button" title="卸载"><i data-lucide="unlink"></i>卸载</button>
+            <button class="delete-source danger" type="button" title="移除来源"><i data-lucide="trash-2"></i>移除</button>
+          </div>
+          <i class="chevron" data-lucide="chevron-down"></i>
+        </div>
+      </summary>
+      <div class="source-body">
+        <div class="source-grid">
+          <div class="field"><span class="field-label">NAS 目录</span><div class="remote-input"><input class="source-remote" autocomplete="off" spellcheck="false" placeholder="photo/目录"><button class="browse-source icon-only" type="button" title="浏览 SMB 目录" aria-label="浏览 SMB 目录"><i data-lucide="folder-search"></i></button></div></div>
+          <div class="field"><span class="field-label">本地相册目录名</span><input class="source-album" autocomplete="off" spellcheck="false" placeholder="NAS-Upload"></div>
+          <div class="field"><span class="field-label">扫描间隔（分钟）</span><input class="source-interval" type="number" min="15" max="10080"></div>
+          <div class="field"><span class="field-label">每批登记数</span><input class="source-batch" type="number" min="1" max="5000"></div>
+        </div>
+        <div class="source-options">
+          <label><input class="source-enabled" type="checkbox">启用来源</label>
+          <label><input class="source-auto-scan" type="checkbox">自动扫描</label>
+          <span class="source-filter-count">0 条忽略规则</span>
+          <span class="source-detail-status">文件 -- · 待登记 --</span>
+        </div>
+        <div class="rules-head"><span class="field-label">忽略规则</span><span class="field-note">Syncthing .stignore</span></div>
+        <textarea class="source-ignore" spellcheck="false" aria-label="来源忽略规则"></textarea>
+        <div class="source-save"><button class="save-source primary" type="button"><i data-lucide="save"></i>保存来源</button></div>
+      </div>
+    </details>
+  </template>
+
+  <div id="browserModal" class="modal-backdrop hidden" role="dialog" aria-modal="true" aria-label="浏览 SMB 目录">
+    <div class="modal">
+      <div class="modal-head"><div id="browserPath" class="browser-path"><i data-lucide="network"></i><span>NAS 根目录</span></div><button id="closeBrowserBtn" class="icon-only" type="button" title="关闭" aria-label="关闭"><i data-lucide="x"></i></button></div>
+      <div id="folderList" class="folder-list"></div>
+      <div class="modal-foot"><button id="upBrowserBtn" type="button"><i data-lucide="arrow-up"></i>上一级</button><button id="chooseBrowserBtn" class="primary" type="button"><i data-lucide="check"></i>选择此目录</button></div>
+    </div>
+  </div>
+
+  <div id="toast" class="toast" role="status"></div>
+
+  <script src="/vendor/echarts-5.6.0.min.js"></script>
+  <script src="/vendor/lucide-0.468.0.min.js"></script>
+  <script>
+    const token = location.hash.slice(1);
+    const $ = (id) => document.getElementById(id);
+    const reduceMotion = matchMedia('(prefers-reduced-motion: reduce)').matches;
+    let defaultIgnore = '';
+    let browsePath = '';
+    let browseInput = null;
+    let busy = false;
+    let capacityChart = null;
+    let sourceChart = null;
+    let latestStatus = null;
+    const sourceConfig = new Map();
+    const shownErrors = new Map();
+
+    const renderIcons = () => { if (window.lucide) window.lucide.createIcons(); };
+    const api = async (path, options = {}) => {
+      const headers = new Headers(options.headers || {});
+      headers.set('X-NAS-Token', token);
+      const response = await fetch(path, { ...options, headers, cache: 'no-store' });
+      if (!response.ok) {
+        let code = `HTTP ${response.status}`;
+        try { code = (await response.json()).error || code; } catch (_) {}
+        const labels = {
+          smb_login_failed: 'SMB 登录失败', invalid_remote_path: '远程目录格式无效',
+          invalid_album_name: '本地相册名称无效', duplicate_album_name: '本地相册名称已被使用',
+          remote_or_filter_validation_failed: '远程目录或忽略规则验证失败',
+          browse_failed: '目录读取失败', source_limit_reached: '来源数量已达到上限',
+        };
+        throw new Error(labels[code] || code);
+      }
+      return response;
+    };
+    const decodeB64 = (value) => {
+      if (!value) return '';
+      const bytes = Uint8Array.from(atob(value), (char) => char.charCodeAt(0));
+      return new TextDecoder().decode(bytes);
+    };
+    const formatBytes = (value) => {
+      const size = Number(value || 0);
+      if (!size) return '0 B';
+      const units = ['B', 'KB', 'MB', 'GB', 'TB', 'PB'];
+      const index = Math.min(Math.floor(Math.log(size) / Math.log(1024)), units.length - 1);
+      return `${(size / 1024 ** index).toFixed(index > 2 ? 2 : 1)} ${units[index]}`;
+    };
+    const formatTime = (epoch) => Number(epoch) ? new Date(Number(epoch) * 1000).toLocaleString() : '尚未扫描';
+    const formatRelativeTime = (epoch, serverTime) => {
+      if (!Number(epoch)) return '尚未扫描';
+      const seconds = Math.max(0, Number(serverTime || Date.now() / 1000) - Number(epoch));
+      if (seconds < 60) return '刚刚';
+      if (seconds < 3600) return `${Math.floor(seconds / 60)} 分钟前`;
+      if (seconds < 86400) return `${Math.floor(seconds / 3600)} 小时前`;
+      if (seconds < 604800) return `${Math.floor(seconds / 86400)} 天前`;
+      return new Date(Number(epoch) * 1000).toLocaleDateString();
+    };
+    const scanLabel = (value) => ({ idle: '空闲', scanning: '扫描中', error: '扫描异常', not_started: '未扫描' }[value] || value);
+    const showToast = (message) => {
+      $('toast').textContent = message;
+      $('toast').classList.add('visible');
+      clearTimeout(showToast.timer);
+      showToast.timer = setTimeout(() => $('toast').classList.remove('visible'), 3600);
+    };
+    const setBusy = (value) => {
+      busy = value;
+      document.querySelectorAll('button').forEach((button) => {
+        button.disabled = value || button.classList.contains('draft-action-disabled');
+      });
+    };
+    const setPasswordIcon = (visible) => {
+      const button = $('togglePasswordBtn');
+      button.innerHTML = `<i data-lucide="${visible ? 'eye-off' : 'eye'}"></i>`;
+      button.title = visible ? '隐藏密码' : '显示密码';
+      button.setAttribute('aria-label', button.title);
+      renderIcons();
+    };
+
+    function initCharts() {
+      if (!window.echarts) return;
+      capacityChart = echarts.init($('capacityChart'));
+      sourceChart = echarts.init($('sourceChart'));
+      addEventListener('resize', () => { capacityChart.resize(); sourceChart.resize(); });
+    }
+
+    function updateCharts(data) {
+      if (!capacityChart || !sourceChart) return;
+      const used = Number(data.nasUsed || 0);
+      const free = Number(data.nasFree || 0);
+      const total = Number(data.nasTotal || used + free || 1);
+      const percent = total ? Math.min(100, Math.round(used / total * 100)) : 0;
+      $('capacityChartMeta').textContent = `${formatBytes(used)} / ${formatBytes(total)}`;
+      capacityChart.setOption({
+        animationDuration: reduceMotion ? 0 : 240,
+        color: ['#0f766e', '#e4ebe8'],
+        tooltip: { trigger: 'item', borderWidth: 0, backgroundColor: '#17211e', textStyle: { color: '#fff', fontSize: 12 }, formatter: (item) => `${item.name}<br>${formatBytes(item.value)}` },
+        aria: { enabled: true },
+        series: [{
+          type: 'pie', radius: ['61%', '82%'], center: ['50%', '50%'], silent: false,
+          label: { show: false }, labelLine: { show: false }, emphasis: { scaleSize: 3 },
+          data: [{ value: used, name: '已使用' }, { value: free, name: '可用' }],
+        }],
+        graphic: [{ type: 'text', left: 'center', top: '39%', style: { text: `${percent}%`, fill: '#17201d', fontSize: 25, fontWeight: 700, textAlign: 'center' } }, { type: 'text', left: 'center', top: '56%', style: { text: '已使用', fill: '#64716c', fontSize: 11, textAlign: 'center' } }],
+      }, true);
+
+      const rows = data.sources.map((state) => {
+        const config = sourceConfig.get(state.id) || {};
+        return { ...state, name: config.albumName || state.id };
+      }).sort((a, b) => Number(a.currentBytes) - Number(b.currentBytes));
+      const compactChart = innerWidth < 620;
+      $('sourceChartMeta').textContent = rows.length ? `${rows.length} 个来源 · ${formatBytes(data.totalBytes)}` : '暂无来源';
+      const maxVisible = 6;
+      const zoomStart = rows.length > maxVisible ? Math.max(0, 100 - maxVisible / rows.length * 100) : 0;
+      sourceChart.setOption({
+        animationDuration: reduceMotion ? 0 : 240,
+        grid: { left: compactChart ? 8 : 14, right: rows.length > maxVisible ? 68 : 58, top: 15, bottom: 22, containLabel: true },
+        tooltip: { trigger: 'axis', axisPointer: { type: 'shadow' }, borderWidth: 0, backgroundColor: '#17211e', textStyle: { color: '#fff', fontSize: 12 }, formatter: (items) => { const row = rows[items[0].dataIndex]; return `${row.name}<br>已索引 ${formatBytes(row.currentBytes)}<br>待登记 ${Number(row.pendingFiles).toLocaleString()}`; } },
+        aria: { enabled: true },
+        xAxis: { type: 'value', splitNumber: compactChart ? 2 : 5, axisLabel: { color: '#7b8782', fontSize: compactChart ? 10 : 12, hideOverlap: true, formatter: (value) => formatBytes(value) }, splitLine: { lineStyle: { color: '#edf1ef' } }, axisLine: { show: false }, axisTick: { show: false } },
+        yAxis: { type: 'category', data: rows.map((row) => row.name), axisLabel: { color: '#44504c', width: compactChart ? 100 : 120, overflow: 'truncate' }, axisLine: { show: false }, axisTick: { show: false } },
+        dataZoom: rows.length > maxVisible ? [{ type: 'inside', yAxisIndex: 0, start: zoomStart, end: 100 }, { type: 'slider', yAxisIndex: 0, start: zoomStart, end: 100, width: 10, right: 6, showDetail: false, borderColor: 'transparent', fillerColor: 'rgba(15,118,110,.18)', handleSize: 0 }] : [],
+        series: [{ type: 'bar', barMaxWidth: 18, data: rows.map((row) => ({ value: Number(row.currentBytes || 0), itemStyle: { color: !row.enabled ? '#a7b0ac' : row.mounted && row.rcloneAlive ? '#3975c6' : '#c38320', borderRadius: [0, 4, 4, 0] } })), label: { show: true, position: 'right', color: '#64716c', fontSize: 11, formatter: (item) => formatBytes(item.value) } }],
+      }, true);
+    }
+
+    async function loadConnection(collapse = false) {
+      const data = await (await api('/cgi-bin/connection')).json();
+      $('smbHost').value = data.host;
+      $('smbPort').value = data.port || 445;
+      $('smbUser').value = data.username;
+      $('smbDomain').value = data.domain;
+      $('smbPassword').value = '';
+      $('smbPassword').placeholder = data.hasPassword ? '留空以保留已保存密码' : '输入 SMB 密码';
+      $('passwordNote').textContent = data.hasPassword ? '密码已保存，接口不会回显' : '尚未保存密码';
+      $('activeSummary').textContent = data.host ? `${data.host}:${data.port}` : '尚未配置 SMB';
+      $('connectionSummary').textContent = data.host ? `${data.host}:${data.port} · ${data.username}${data.domain ? ` · ${data.domain}` : ''}` : '尚未配置远程地址';
+      $('connectionState').textContent = data.hasPassword ? '已配置' : '未配置';
+      $('connectionDot').className = `dot ${data.hasPassword ? 'warn' : ''}`;
+      if (collapse || !data.hasPassword) $('connectionPanel').open = !data.hasPassword;
+    }
+
+    function createSourceCard(source, draft = false) {
+      const card = $('sourceTemplate').content.firstElementChild.cloneNode(true);
+      card.dataset.sourceId = source.id || '';
+      card.dataset.albumName = source.albumName || '新来源';
+      card.open = draft;
+      if (draft) card.classList.add('draft');
+      card.querySelector('.source-enabled').checked = Boolean(source.enabled);
+      card.querySelector('.source-title-text').textContent = source.albumName || '新来源';
+      card.querySelector('.source-path').textContent = source.remotePath ? `nas:${source.remotePath}` : '尚未选择远程目录';
+      card.querySelector('.source-remote').value = source.remotePath || '';
+      card.querySelector('.source-album').value = source.albumName || '';
+      card.querySelector('.source-interval').value = source.scanIntervalMinutes || 360;
+      card.querySelector('.source-batch').value = source.scanBatchSize || 500;
+      card.querySelector('.source-auto-scan').checked = Boolean(source.autoScan);
+      const ignoreField = card.querySelector('.source-ignore');
+      const filterCount = card.querySelector('.source-filter-count');
+      const updateFilterCount = () => {
+        const count = ignoreField.value.split(/\r?\n/).map((line) => line.trim()).filter((line) => line && !line.startsWith('#')).length;
+        filterCount.textContent = `${count} 条忽略规则`;
+      };
+      ignoreField.value = source.ignoreRules ?? defaultIgnore;
+      ignoreField.addEventListener('input', updateFilterCount);
+      updateFilterCount();
+
+      card.querySelector('.source-actions').addEventListener('click', (event) => { event.preventDefault(); event.stopPropagation(); });
+      card.querySelector('.browse-source').addEventListener('click', () => openBrowser(card.querySelector('.source-remote')));
+      card.querySelector('.save-source').addEventListener('click', () => saveSource(card));
+      card.querySelector('.scan-source').addEventListener('click', () => runSourceAction(card, 'scan', '增量扫描已开始'));
+      card.querySelector('.remount-source').addEventListener('click', () => runSourceAction(card, 'remount', '正在重新挂载来源'));
+      card.querySelector('.unmount-source').addEventListener('click', () => runSourceAction(card, 'unmount', '正在卸载来源'));
+      card.querySelector('.delete-source').addEventListener('click', () => deleteSource(card));
+      if (draft) {
+        card.querySelectorAll('.source-actions button:not(.delete-source)').forEach((button) => { button.classList.add('draft-action-disabled'); button.disabled = true; });
+        const cancelButton = card.querySelector('.delete-source');
+        cancelButton.title = '取消新增';
+        cancelButton.innerHTML = '<i data-lucide="x"></i>取消';
+      }
+      return card;
+    }
+
+    async function loadSources() {
+      const data = await (await api('/cgi-bin/sources')).json();
+      defaultIgnore = decodeB64(data.defaultIgnoreB64);
+      sourceConfig.clear();
+      $('sourceList').replaceChildren();
+      data.sources.forEach((source) => {
+        source.ignoreRules = decodeB64(source.ignoreB64);
+        sourceConfig.set(source.id, source);
+        $('sourceList').append(createSourceCard(source));
+      });
+      if (!data.sources.length) addDraftSource();
+      renderIcons();
+    }
+
+    function addDraftSource() {
+      if (busy) return;
+      const existingDraft = document.querySelector('.source-card.draft');
+      if (existingDraft) { existingDraft.open = true; existingDraft.scrollIntoView({ behavior: reduceMotion ? 'auto' : 'smooth', block: 'start' }); return showToast('请先保存当前新来源'); }
+      const existing = document.querySelectorAll('.source-card').length;
+      const draft = { id: '', remotePath: '', albumName: `NAS-Upload-${existing + 1}`, enabled: 1, autoScan: 1, scanIntervalMinutes: 360, scanBatchSize: 500, ignoreRules: defaultIgnore };
+      const card = createSourceCard(draft, true);
+      $('sourceList').prepend(card);
+      renderIcons();
+      card.scrollIntoView({ behavior: reduceMotion ? 'auto' : 'smooth', block: 'start' });
+    }
+
+    async function saveConnection() {
+      setBusy(true);
+      try {
+        const body = new URLSearchParams({ host: $('smbHost').value.trim(), port: $('smbPort').value, username: $('smbUser').value, password: $('smbPassword').value, domain: $('smbDomain').value.trim() });
+        await api('/cgi-bin/connection', { method: 'POST', headers: { 'Content-Type': 'application/x-www-form-urlencoded;charset=UTF-8' }, body });
+        showToast('SMB 验证成功，正在重新挂载');
+        await loadConnection(true);
+        setTimeout(() => loadStatus().catch(() => {}), 1600);
+      } catch (error) { showToast(`连接失败：${error.message}`); }
+      finally { setBusy(false); }
+    }
+
+    async function saveSource(card) {
+      setBusy(true);
+      try {
+        const body = new URLSearchParams({
+          operation: 'save', sourceId: card.dataset.sourceId,
+          remotePath: card.querySelector('.source-remote').value.trim(), albumName: card.querySelector('.source-album').value.trim(),
+          enabled: card.querySelector('.source-enabled').checked ? '1' : '0', autoScan: card.querySelector('.source-auto-scan').checked ? '1' : '0',
+          scanIntervalMinutes: card.querySelector('.source-interval').value, scanBatchSize: card.querySelector('.source-batch').value,
+          ignoreRules: card.querySelector('.source-ignore').value,
+        });
+        await api('/cgi-bin/sources', { method: 'POST', headers: { 'Content-Type': 'application/x-www-form-urlencoded;charset=UTF-8' }, body });
+        showToast('来源已保存，正在应用挂载条件');
+        await loadSources();
+        setTimeout(() => loadStatus().catch(() => {}), 1600);
+      } catch (error) { showToast(`保存失败：${error.message}`); }
+      finally { setBusy(false); }
+    }
+
+    async function deleteSource(card) {
+      const sourceId = card.dataset.sourceId;
+      if (!sourceId) { card.remove(); return; }
+      const album = card.querySelector('.source-album').value;
+      if (!confirm(`移除来源“${album}”？去重状态会被归档保留。`)) return;
+      setBusy(true);
+      try {
+        const body = new URLSearchParams({ operation: 'delete', sourceId });
+        await api('/cgi-bin/sources', { method: 'POST', headers: { 'Content-Type': 'application/x-www-form-urlencoded;charset=UTF-8' }, body });
+        showToast('来源已卸载并归档');
+        await loadSources();
+        await loadStatus();
+      } catch (error) { showToast(`移除失败：${error.message}`); }
+      finally { setBusy(false); }
+    }
+
+    async function runSourceAction(card, action, message) {
+      const sourceId = card.dataset.sourceId;
+      if (!sourceId) return showToast('请先保存来源');
+      setBusy(true);
+      try {
+        const body = new URLSearchParams({ action, sourceId });
+        await api('/cgi-bin/action', { method: 'POST', headers: { 'Content-Type': 'application/x-www-form-urlencoded;charset=UTF-8' }, body });
+        showToast(message);
+        setTimeout(() => loadStatus().catch(() => {}), 1200);
+      } catch (error) { showToast(`操作失败：${error.message}`); }
+      finally { setBusy(false); }
+    }
+
+    async function runGlobalAction(action, message) {
+      setBusy(true);
+      try {
+        const body = new URLSearchParams({ action });
+        await api('/cgi-bin/action', { method: 'POST', headers: { 'Content-Type': 'application/x-www-form-urlencoded;charset=UTF-8' }, body });
+        showToast(message);
+        setTimeout(() => loadStatus().catch(() => {}), 1400);
+      } catch (error) { showToast(`操作失败：${error.message}`); }
+      finally { setBusy(false); }
+    }
+
+    async function loadStatus() {
+      const data = await (await api('/cgi-bin/status')).json();
+      latestStatus = data;
+      const allOnline = data.enabledCount > 0 && data.mountedCount === data.enabledCount;
+      const noEnabled = data.enabledCount === 0;
+      $('globalDot').className = `dot ${noEnabled ? '' : allOnline ? 'good' : data.mountedCount ? 'warn' : 'bad'}`;
+      $('globalStatus').textContent = noEnabled ? '无启用来源' : allOnline ? '全部在线' : `${data.mountedCount}/${data.enabledCount} 在线`;
+      $('mountCount').textContent = `${data.mountedCount} / ${data.enabledCount}`;
+      $('watchdogState').textContent = data.watchdogAlive ? '守护进程正常' : '守护进程异常';
+      $('indexedValue').textContent = `${Number(data.totalFiles).toLocaleString()} 项`;
+      $('indexedDetail').textContent = formatBytes(data.totalBytes);
+      $('queueValue').textContent = `${Number(data.totalPending).toLocaleString()} 待登记`;
+      $('queueDetail').textContent = data.scanningCount ? `${data.scanningCount} 个来源扫描中` : '当前无扫描任务';
+      $('freeValue').textContent = formatBytes(data.nasFree);
+      $('capacityUpdated').textContent = data.capacityUpdated ? `${formatRelativeTime(data.capacityUpdated, data.serverTime)}更新` : '尚未更新';
+      $('connectionDot').className = `dot ${allOnline ? 'good' : data.mountedCount ? 'warn' : ''}`;
+      if (data.enabledCount) $('connectionState').textContent = allOnline ? '已连接' : '部分在线';
+
+      data.sources.forEach((state) => {
+        const card = document.querySelector(`.source-card[data-source-id="${state.id}"]`);
+        if (!card) return;
+        const online = state.enabled && state.mounted && state.rcloneAlive;
+        card.querySelector('.source-dot').className = `dot source-dot ${online ? 'good' : state.enabled ? 'bad' : ''}`;
+        card.querySelector('.source-status-text').textContent = state.enabled ? (online ? `已挂载 · ${scanLabel(state.scanStatus)}` : '未挂载') : '已停用';
+        card.querySelector('.summary-last-scan').textContent = formatRelativeTime(state.lastScan, data.serverTime);
+        card.querySelector('.summary-last-scan').title = formatTime(state.lastScan);
+        card.querySelector('.summary-bytes').textContent = formatBytes(state.currentBytes);
+        card.querySelector('.source-filter-count').textContent = `${state.filterCount} 条忽略规则`;
+        card.querySelector('.source-detail-status').textContent = `文件 ${Number(state.currentFiles).toLocaleString()} · 待登记 ${Number(state.pendingFiles).toLocaleString()}`;
+        if (state.errorB64) {
+          const error = decodeB64(state.errorB64).trim();
+          if (error && shownErrors.get(state.id) !== error) { shownErrors.set(state.id, error); showToast(error); }
+        }
+      });
+      updateCharts(data);
+    }
+
+    async function loadLog() {
+      $('logView').textContent = await (await api('/cgi-bin/log')).text() || '暂无日志';
+      $('logView').scrollTop = $('logView').scrollHeight;
+    }
+
+    async function openBrowser(targetInput) {
+      browseInput = targetInput;
+      browsePath = targetInput.value.trim();
+      $('browserModal').classList.remove('hidden');
+      await loadFolders(browsePath);
+    }
+    async function loadFolders(path) {
+      browsePath = path;
+      $('browserPath').querySelector('span').textContent = path ? `nas:${path}` : 'NAS 根目录';
+      $('folderList').innerHTML = '<div class="empty">正在读取目录</div>';
+      try {
+        const items = await (await api(`/cgi-bin/browse?path=${encodeURIComponent(path)}`)).json();
+        $('folderList').replaceChildren();
+        if (!items.length) { $('folderList').innerHTML = '<div class="empty">没有子目录</div>'; return; }
+        items.sort((a, b) => a.Name.localeCompare(b.Name, 'zh-CN')).forEach((item) => {
+          const row = document.createElement('div'); row.className = 'folder-row';
+          const name = document.createElement('div'); name.className = 'folder-name'; name.innerHTML = '<i data-lucide="folder"></i>';
+          const label = document.createElement('span'); label.textContent = item.Name; name.append(label);
+          const enter = document.createElement('button'); enter.className = 'icon-only'; enter.type = 'button'; enter.title = `进入 ${item.Name}`; enter.setAttribute('aria-label', enter.title); enter.innerHTML = '<i data-lucide="chevron-right"></i>';
+          enter.addEventListener('click', () => loadFolders(path ? `${path}/${item.Name}` : item.Name));
+          row.append(name, enter); $('folderList').append(row);
+        });
+        renderIcons();
+      } catch (error) { $('folderList').innerHTML = `<div class="empty">读取失败：${error.message}</div>`; }
+    }
+    function closeBrowser() { $('browserModal').classList.add('hidden'); browseInput = null; }
+
+    $('saveConnectionBtn').addEventListener('click', saveConnection);
+    $('togglePasswordBtn').addEventListener('click', () => {
+      const field = $('smbPassword');
+      const visible = field.type === 'password';
+      field.type = visible ? 'text' : 'password';
+      setPasswordIcon(visible);
+    });
+    $('addSourceBtn').addEventListener('click', addDraftSource);
+    $('refreshCapacityBtn').addEventListener('click', () => runGlobalAction('capacity', '正在刷新 NAS 容量'));
+    $('remountAllBtn').addEventListener('click', () => runGlobalAction('remountAll', '正在重新挂载全部来源'));
+    $('closeBrowserBtn').addEventListener('click', closeBrowser);
+    $('upBrowserBtn').addEventListener('click', () => { const parts = browsePath.split('/').filter(Boolean); parts.pop(); loadFolders(parts.join('/')); });
+    $('chooseBrowserBtn').addEventListener('click', () => {
+      if (!browseInput || !browsePath) return showToast('请选择共享目录或其子目录');
+      browseInput.value = browsePath;
+      closeBrowser();
+    });
+    $('logPanel').addEventListener('toggle', () => { if ($('logPanel').open) loadLog().catch(() => {}); });
+
+    async function boot() {
+      if (!token) { $('auth').classList.remove('hidden'); return; }
+      $('app').classList.remove('hidden');
+      renderIcons();
+      initCharts();
+      try { await Promise.all([loadConnection(), loadSources()]); await loadStatus(); }
+      catch (_) { $('app').classList.add('hidden'); $('auth').classList.remove('hidden'); return; }
+      setInterval(() => loadStatus().catch(() => {}), 5000);
+      setInterval(() => { if ($('logPanel').open) loadLog().catch(() => {}); }, 15000);
+    }
+    boot();
+  </script>
+</body>
+</html>

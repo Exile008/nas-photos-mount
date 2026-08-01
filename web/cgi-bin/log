@@ -1,0 +1,6 @@
+#!/system/bin/sh
+
+. /data/adb/modules/nas_photos_mount/cgi-lib.sh
+require_auth
+send_text_header
+[ -r "$LOG" ] && "$BUSYBOX" tail -n 80 "$LOG"

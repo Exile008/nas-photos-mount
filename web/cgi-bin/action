@@ -1,0 +1,41 @@
+#!/system/bin/sh
+
+. /data/adb/modules/nas_photos_mount/cgi-lib.sh
+require_auth
+[ "$REQUEST_METHOD" = 'POST' ] || fail_json '405 Method Not Allowed' 'method_not_allowed'
+
+body=$(read_request_body)
+action=''
+source_id=''
+old_ifs=$IFS
+IFS='&'
+set -- $body
+IFS=$old_ifs
+for pair in "$@"; do
+  key=${pair%%=*}
+  encoded=${pair#*=}
+  value=$(decode_form_value "$encoded")
+  [ "$key" = action ] && action=$value
+  [ "$key" = sourceId ] && source_id=$value
+done
+
+case "$action" in
+  remountAll)
+    "$BUSYBOX" setsid nsenter -t 1 -m -- "$MODDIR/remount.sh" </dev/null >> "$LOG" 2>&1 &
+    ;;
+  capacity)
+    "$BUSYBOX" setsid "$MODDIR/refresh-capacity.sh" </dev/null >> "$LOG" 2>&1 &
+    ;;
+  remount|unmount|scan)
+    source_exists "$source_id" || fail_json '404 Not Found' 'source_not_found'
+    case "$action" in
+      remount) "$BUSYBOX" setsid nsenter -t 1 -m -- "$MODDIR/remount.sh" "$source_id" </dev/null >> "$LOG" 2>&1 & ;;
+      unmount) "$BUSYBOX" setsid nsenter -t 1 -m -- "$MODDIR/unmount.sh" "$source_id" </dev/null >> "$LOG" 2>&1 & ;;
+      scan) "$BUSYBOX" setsid "$MODDIR/scan-new.sh" "$source_id" </dev/null >> "$LOG" 2>&1 & ;;
+    esac
+    ;;
+  *) fail_json '400 Bad Request' 'unknown_action' ;;
+esac
+
+send_json_header
+printf '{"ok":true,"action":"%s"}\n' "$action"
