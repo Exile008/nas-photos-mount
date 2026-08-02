@@ -121,8 +121,8 @@ Keep these files in sync when publishing a version:
 Use a feature branch and pull request where practical. After merging into `main`, create a version tag such as:
 
 ```bash
-git tag -a v3.3.0 -m "NAS Photos Mount v3.3.0"
-git push origin v3.3.0
+git tag -a v3.3.1 -m "NAS Photos Mount v3.3.1"
+git push origin v3.3.1
 ```
 
 ## License

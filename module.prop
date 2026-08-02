@@ -1,7 +1,7 @@
 id=nas_photos_mount
 name=NAS Photos Mount
-version=3.3.0
-versionCode=330
+version=3.3.1
+versionCode=331
 author=Exile008
 description=Mount multiple read-only SMB folders into DCIM for Google Photos on rooted Pixel devices
 updateJson=https://raw.githubusercontent.com/Exile008/nas-photos-mount/main/update.json

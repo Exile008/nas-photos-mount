@@ -109,8 +109,7 @@ while IFS= read -r record || [ -n "$record" ]; do
   rest=${rest#*;}
   relative_path=$rest
   [ -n "$relative_path" ] || continue
-  if am broadcast -a android.intent.action.MEDIA_SCANNER_SCAN_FILE \
-    -d "file:///storage/emulated/0/DCIM/$ALBUM_NAME/$relative_path" >/dev/null 2>&1; then
+  if "$MODDIR/register-media-file.sh" "/storage/emulated/0/DCIM/$ALBUM_NAME/$relative_path"; then
     submitted=$((submitted + 1))
     printf '%s\n' "$record" >> "$SUBMITTED_NEW"
   fi

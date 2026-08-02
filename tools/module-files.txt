@@ -9,6 +9,7 @@ lib.sh
 mount-once.sh
 refresh-capacity.sh
 refresh-live-photo-filter.sh
+register-media-file.sh
 remount.sh
 scan-new.sh
 service.sh

@@ -1,5 +1,10 @@
 # Changelog
 
+## 3.3.1 - 2026-08-02
+
+- Isolate each Android MediaScanner command from the scan batch input so media registration succeeds reliably.
+- Fix standalone MOV files being present in the mount and index but missing from Android MediaStore and Google Photos.
+
 ## 3.3.0 - 2026-08-02
 
 - Replace the temporary unmount action with a persistent per-source pause/resume mount control.

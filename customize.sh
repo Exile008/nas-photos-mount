@@ -13,8 +13,8 @@ set_perm "$MODPATH/fusermount3" 0 0 0755
 
 for script in \
   action.sh build-live-photo-excludes.sh cgi-lib.sh compile-ignore.sh lib.sh mount-once.sh \
-  refresh-capacity.sh refresh-live-photo-filter.sh remount.sh scan-new.sh service.sh \
-  start-web.sh uninstall.sh unmount.sh watchdog.sh; do
+  refresh-capacity.sh refresh-live-photo-filter.sh register-media-file.sh remount.sh \
+  scan-new.sh service.sh start-web.sh uninstall.sh unmount.sh watchdog.sh; do
   set_perm "$MODPATH/$script" 0 0 0755
 done
 
